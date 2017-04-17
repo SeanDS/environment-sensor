@@ -1,0 +1,8 @@
+EESchema-DOCLIB  Version 2.0
+#
+$CMP Bosch_BME280
+D Bosch BME280 environment sensor
+K environment environmental temperature pressure humidity sensor
+$ENDCMP
+#
+#End Doc Library

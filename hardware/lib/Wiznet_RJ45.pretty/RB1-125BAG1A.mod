@@ -1,0 +1,157 @@
+PCBNEW-LibModule-V1  
+# encoding utf-8
+Units mm
+$INDEX
+WIZNET_RB1-125BAG1A
+$EndINDEX
+$MODULE WIZNET_RB1-125BAG1A
+Po 0 0 0 15 00000000 00000000 ~~
+Li WIZNET_RB1-125BAG1A
+Cd 
+Sc 00000000
+At STD
+Op 0 0 0
+.SolderMask 0.1
+.SolderPaste 0
+T0 -5.08079 -11.874 1 1 0 0.05 N V 21 "WIZNET_RB1-125BAG1A"
+T1 -4.44579 9.03104 1 1 0 0.05 N V 21 "VAL**"
+DP 0 0 0 0 4 0.381 24
+Dl -6.34966 -5.52786
+Dl -5.14966 -5.52786
+Dl -5.14966 -1.75286
+Dl -6.34966 -1.75286
+DP 0 0 0 0 4 0.381 24
+Dl 5.14821 -5.52795
+Dl 6.34821 -5.52795
+Dl 6.34821 -1.75295
+Dl 5.14821 -1.75295
+DP 0 0 0 0 4 0.381 24
+Dl -1.5 5.4
+Dl 1.5 5.4
+Dl 1.5 6.9
+Dl -1.5 6.9
+$PAD
+Sh "R8" C 1.3 1.3 0 0 0
+Dr 0.9 0 0
+At STD N 00E0FFFF
+.SolderMask 0.2
+Ne 0 ""
+Po 4.44421 -8.88896
+$EndPAD
+$PAD
+Sh "R7" C 1.3 1.3 0 0 0
+Dr 0.9 0 0
+At STD N 00E0FFFF
+.SolderMask 0.2
+Ne 0 ""
+Po 3.17421 -6.34896
+$EndPAD
+$PAD
+Sh "R6" C 1.3 1.3 0 0 0
+Dr 0.9 0 0
+At STD N 00E0FFFF
+.SolderMask 0.2
+Ne 0 ""
+Po 1.90421 -8.88896
+$EndPAD
+$PAD
+Sh "R5" C 1.3 1.3 0 0 0
+Dr 0.9 0 0
+At STD N 00E0FFFF
+.SolderMask 0.2
+Ne 0 ""
+Po 0.634209 -6.34896
+$EndPAD
+$PAD
+Sh "R4" C 1.3 1.3 0 0 0
+Dr 0.9 0 0
+At STD N 00E0FFFF
+.SolderMask 0.2
+Ne 0 ""
+Po -0.635791 -8.88896
+$EndPAD
+$PAD
+Sh "R3" C 1.3 1.3 0 0 0
+Dr 0.9 0 0
+At STD N 00E0FFFF
+.SolderMask 0.2
+Ne 0 ""
+Po -1.90579 -6.34896
+$EndPAD
+$PAD
+Sh "R2" C 1.3 1.3 0 0 0
+Dr 0.9 0 0
+At STD N 00E0FFFF
+.SolderMask 0.2
+Ne 0 ""
+Po -3.17579 -8.88896
+$EndPAD
+$PAD
+Sh "R1" C 1.3 1.3 0 0 0
+Dr 0.9 0 0
+At STD N 00E0FFFF
+.SolderMask 0.2
+Ne 0 ""
+Po -4.44579 -6.34896
+$EndPAD
+$PAD
+Sh "S1" C 2.1844 2.1844 0 0 0
+Dr 1.6 0 0
+At STD N 00E0FFFF
+.SolderMask 0.2
+Ne 0 ""
+Po -7.87579 -3.04896
+$EndPAD
+$PAD
+Sh "S2" C 2.1844 2.1844 0 0 0
+Dr 1.6 0 0
+At STD N 00E0FFFF
+.SolderMask 0.2
+Ne 0 ""
+Po 7.87421 -3.04896
+$EndPAD
+$PAD
+Sh "Hole" C 3.3 3.3 0 0 0
+Dr 3.3 0 0
+At HOLE N 0
+Po 5.71421 0.00104063
+$EndPAD
+$PAD
+Sh "Hole" C 3.3 3.3 0 0 0
+Dr 3.3 0 0
+At HOLE N 0
+Po -5.71579 0.00104063
+$EndPAD
+$PAD
+Sh "L1" C 1.408 1.408 0 0 0
+Dr 0.9 0 0
+At STD N 00E0FFFF
+.SolderMask 0.2
+Ne 0 ""
+Po 6.32547 3.37963
+$EndPAD
+$PAD
+Sh "L4" C 1.408 1.408 0 0 0
+Dr 0.9 0 0
+At STD N 00E0FFFF
+.SolderMask 0.2
+Ne 0 ""
+Po -6.32453 4.89963
+$EndPAD
+$PAD
+Sh "L3" C 1.408 1.408 0 0 0
+Dr 0.9 0 0
+At STD N 00E0FFFF
+.SolderMask 0.2
+Ne 0 ""
+Po -3.78638 3.37913
+$EndPAD
+$PAD
+Sh "L2" C 1.408 1.408 0 0 0
+Dr 0.9 0 0
+At STD N 00E0FFFF
+.SolderMask 0.2
+Ne 0 ""
+Po 3.78362 4.89913
+$EndPAD
+$EndMODULE WIZNET_RB1-125BAG1A

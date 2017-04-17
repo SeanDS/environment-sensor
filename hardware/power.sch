@@ -1,0 +1,487 @@
+EESchema Schematic File Version 2
+LIBS:power
+LIBS:device
+LIBS:transistors
+LIBS:conn
+LIBS:linear
+LIBS:regul
+LIBS:74xx
+LIBS:cmos4000
+LIBS:adc-dac
+LIBS:memory
+LIBS:xilinx
+LIBS:microcontrollers
+LIBS:dsp
+LIBS:microchip
+LIBS:analog_switches
+LIBS:motorola
+LIBS:texas
+LIBS:intel
+LIBS:audio
+LIBS:interface
+LIBS:digital-audio
+LIBS:philips
+LIBS:display
+LIBS:cypress
+LIBS:siliconi
+LIBS:opto
+LIBS:atmel
+LIBS:contrib
+LIBS:valves
+LIBS:wiznet
+LIBS:Sensors_STMicroelectronics
+LIBS:Sensors_Bosch
+LIBS:environment-sensor-cache
+EELAYER 25 0
+EELAYER END
+$Descr A4 11693 8268
+encoding utf-8
+Sheet 5 5
+Title ""
+Date ""
+Rev ""
+Comp ""
+Comment1 ""
+Comment2 ""
+Comment3 ""
+Comment4 ""
+$EndDescr
+Text HLabel 8350 3700 2    60   Output ~ 0
+3V3A
+Text HLabel 8350 4400 2    60   Output ~ 0
+GND
+$Comp
+L GND #PWR?
+U 1 1 587230D7
+P 3375 4400
+F 0 "#PWR?" H 3375 4150 50  0001 C CNN
+F 1 "GND" H 3375 4250 50  0000 C CNN
+F 2 "" H 3375 4400 50  0000 C CNN
+F 3 "" H 3375 4400 50  0000 C CNN
+	1    3375 4400
+	0    1    1    0   
+$EndComp
+Text HLabel 8350 3150 2    60   Output ~ 0
+5VA
+$Comp
+L CONN_01X02 P?
+U 1 1 58F70F15
+P 3175 3200
+F 0 "P?" H 3175 3350 50  0000 C CNN
+F 1 "POWER" V 3275 3200 50  0000 C CNN
+F 2 "Terminal_Blocks:TerminalBlock_Pheonix_MKDS1.5-2pol" H 3175 3200 50  0001 C CNN
+F 3 "" H 3175 3200 50  0000 C CNN
+	1    3175 3200
+	-1   0    0    -1  
+$EndComp
+Text Label 3575 3150 0    60   ~ 0
++6V
+$Comp
+L CP_Small C?
+U 1 1 58F717C2
+P 3975 3700
+F 0 "C?" H 3985 3770 50  0000 L CNN
+F 1 "47u" H 3985 3620 50  0000 L CNN
+F 2 "" H 3975 3700 50  0000 C CNN
+F 3 "" H 3975 3700 50  0000 C CNN
+	1    3975 3700
+	1    0    0    -1  
+$EndComp
+$Comp
+L C_Small C?
+U 1 1 58F7181A
+P 4200 3700
+F 0 "C?" H 4210 3770 50  0000 L CNN
+F 1 "100n" H 4210 3620 50  0000 L CNN
+F 2 "" H 4200 3700 50  0000 C CNN
+F 3 "" H 4200 3700 50  0000 C CNN
+	1    4200 3700
+	1    0    0    -1  
+$EndComp
+$Comp
+L LM317T U?
+U 1 1 58F7246B
+P 6800 3750
+F 0 "U?" H 6600 3950 50  0000 C CNN
+F 1 "LM317T" H 6800 3950 50  0000 L CNN
+F 2 "TO_SOT_Packages_THT:TO-220_Neutral123_Vertical_LargePads" H 6800 3850 50  0001 C CIN
+F 3 "" H 6800 3750 50  0000 C CNN
+	1    6800 3750
+	1    0    0    -1  
+$EndComp
+$Comp
+L CP_Small C?
+U 1 1 58F72F88
+P 6100 4000
+F 0 "C?" H 6110 4070 50  0000 L CNN
+F 1 "47u" H 6110 3920 50  0000 L CNN
+F 2 "" H 6100 4000 50  0000 C CNN
+F 3 "" H 6100 4000 50  0000 C CNN
+	1    6100 4000
+	1    0    0    -1  
+$EndComp
+$Comp
+L C_Small C?
+U 1 1 58F730A6
+P 6325 4000
+F 0 "C?" H 6335 4070 50  0000 L CNN
+F 1 "100n" H 6335 3920 50  0000 L CNN
+F 2 "" H 6325 4000 50  0000 C CNN
+F 3 "" H 6325 4000 50  0000 C CNN
+	1    6325 4000
+	1    0    0    -1  
+$EndComp
+$Comp
+L D_Small D?
+U 1 1 58F73B86
+P 4750 2800
+F 0 "D?" H 4700 2880 50  0000 L CNN
+F 1 "1N4002" H 4600 2720 50  0000 L CNN
+F 2 "" V 4750 2800 50  0000 C CNN
+F 3 "" V 4750 2800 50  0000 C CNN
+	1    4750 2800
+	1    0    0    -1  
+$EndComp
+$Comp
+L D_Small D?
+U 1 1 58F73C64
+P 6800 3350
+F 0 "D?" H 6750 3430 50  0000 L CNN
+F 1 "1N4002" H 6650 3270 50  0000 L CNN
+F 2 "" V 6800 3350 50  0000 C CNN
+F 3 "" V 6800 3350 50  0000 C CNN
+	1    6800 3350
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	3375 4400 3425 4400
+Wire Wire Line
+	3425 4400 3975 4400
+Wire Wire Line
+	3975 4400 4200 4400
+Wire Wire Line
+	4200 4400 5250 4400
+Wire Wire Line
+	5250 4400 5500 4400
+Wire Wire Line
+	5500 4400 5800 4400
+Wire Wire Line
+	5800 4400 6100 4400
+Wire Wire Line
+	6100 4400 6325 4400
+Wire Wire Line
+	6325 4400 7275 4400
+Wire Wire Line
+	7275 4400 7475 4400
+Wire Wire Line
+	7475 4400 7800 4400
+Wire Wire Line
+	7800 4400 8100 4400
+Wire Wire Line
+	8100 4400 8350 4400
+Wire Wire Line
+	3375 3150 3975 3150
+Wire Wire Line
+	3975 3150 4200 3150
+Wire Wire Line
+	4200 3150 4350 3150
+Wire Wire Line
+	3375 3250 3425 3250
+Wire Wire Line
+	3425 3250 3425 4400
+Connection ~ 3425 4400
+Wire Wire Line
+	3975 3600 3975 3150
+Connection ~ 3975 3150
+Wire Wire Line
+	3975 3800 3975 4400
+Connection ~ 3975 4400
+Wire Wire Line
+	4200 2800 4200 3150
+Wire Wire Line
+	4200 3150 4200 3600
+Connection ~ 4200 3150
+Wire Wire Line
+	4200 3800 4200 4400
+Connection ~ 4200 4400
+Wire Wire Line
+	6100 3700 6325 3700
+Wire Wire Line
+	6325 3700 6400 3700
+Wire Wire Line
+	6100 3150 6100 3700
+Wire Wire Line
+	6100 3700 6100 3900
+Connection ~ 6100 3150
+Wire Wire Line
+	6325 3350 6325 3700
+Wire Wire Line
+	6325 3700 6325 3900
+Connection ~ 6325 3700
+Connection ~ 6100 3700
+Wire Wire Line
+	6100 4100 6100 4400
+Connection ~ 6100 4400
+Wire Wire Line
+	6325 4100 6325 4400
+Connection ~ 6325 4400
+Wire Wire Line
+	7200 3700 7275 3700
+Wire Wire Line
+	7275 3700 7475 3700
+Wire Wire Line
+	7475 3700 7800 3700
+Wire Wire Line
+	7800 3700 8100 3700
+Wire Wire Line
+	8100 3700 8350 3700
+Wire Wire Line
+	4850 2800 5250 2800
+Wire Wire Line
+	4650 2800 4200 2800
+Wire Wire Line
+	6700 3350 6325 3350
+Wire Wire Line
+	6900 3350 7275 3350
+Wire Wire Line
+	7275 3350 7275 3700
+Wire Wire Line
+	7275 3700 7275 3775
+Connection ~ 7275 3700
+Wire Wire Line
+	5150 3150 5250 3150
+Wire Wire Line
+	5250 3150 5500 3150
+Wire Wire Line
+	5500 3150 5800 3150
+Wire Wire Line
+	5800 3150 6100 3150
+Wire Wire Line
+	6100 3150 8100 3150
+Wire Wire Line
+	8100 3150 8350 3150
+Wire Wire Line
+	5250 2800 5250 3150
+Wire Wire Line
+	5250 3150 5250 3325
+Connection ~ 5250 3150
+$Comp
+L LM317T U?
+U 1 1 58F744D3
+P 4750 3200
+F 0 "U?" H 4550 3400 50  0000 C CNN
+F 1 "LM317T" H 4750 3400 50  0000 L CNN
+F 2 "TO_SOT_Packages_THT:TO-220_Neutral123_Vertical_LargePads" H 4750 3300 50  0001 C CIN
+F 3 "" H 4750 3200 50  0000 C CNN
+	1    4750 3200
+	1    0    0    -1  
+$EndComp
+$Comp
+L R_Small R?
+U 1 1 58F74DCA
+P 5250 3425
+F 0 "R?" H 5280 3445 50  0000 L CNN
+F 1 "110R" H 5280 3385 50  0000 L CNN
+F 2 "" H 5250 3425 50  0000 C CNN
+F 3 "" H 5250 3425 50  0000 C CNN
+	1    5250 3425
+	1    0    0    -1  
+$EndComp
+$Comp
+L R_Small R?
+U 1 1 58F74E0D
+P 5250 4025
+F 0 "R?" H 5280 4045 50  0000 L CNN
+F 1 "330R" H 5280 3985 50  0000 L CNN
+F 2 "" H 5250 4025 50  0000 C CNN
+F 3 "" H 5250 4025 50  0000 C CNN
+	1    5250 4025
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	5250 4125 5250 4400
+Connection ~ 5250 4400
+Wire Wire Line
+	5250 3525 5250 3700
+Wire Wire Line
+	5250 3700 5250 3925
+Wire Wire Line
+	4750 3700 5250 3700
+Wire Wire Line
+	5250 3700 5500 3700
+Wire Wire Line
+	4750 3700 4750 3450
+Connection ~ 5250 3700
+$Comp
+L D_Small D?
+U 1 1 58F7549E
+P 5500 3425
+F 0 "D?" H 5450 3505 50  0000 L CNN
+F 1 "1N4002" H 5375 3575 50  0000 L CNN
+F 2 "" V 5500 3425 50  0000 C CNN
+F 3 "" V 5500 3425 50  0000 C CNN
+	1    5500 3425
+	0    1    1    0   
+$EndComp
+Wire Wire Line
+	5500 3325 5500 3150
+Connection ~ 5500 3150
+Wire Wire Line
+	5500 3525 5500 3700
+Wire Wire Line
+	5500 3700 5500 3925
+$Comp
+L CP_Small C?
+U 1 1 58F755DC
+P 5500 4025
+F 0 "C?" H 5510 4095 50  0000 L CNN
+F 1 "?" H 5510 3945 50  0000 L CNN
+F 2 "" H 5500 4025 50  0000 C CNN
+F 3 "" H 5500 4025 50  0000 C CNN
+	1    5500 4025
+	1    0    0    -1  
+$EndComp
+Connection ~ 5500 3700
+Wire Wire Line
+	5500 4125 5500 4400
+Connection ~ 5500 4400
+$Comp
+L R_Small R?
+U 1 1 58F75DFF
+P 7275 3875
+F 0 "R?" H 7305 3895 50  0000 L CNN
+F 1 "110R" H 7305 3835 50  0000 L CNN
+F 2 "" H 7275 3875 50  0000 C CNN
+F 3 "" H 7275 3875 50  0000 C CNN
+	1    7275 3875
+	1    0    0    -1  
+$EndComp
+$Comp
+L R_Small R?
+U 1 1 58F75ED1
+P 7275 4225
+F 0 "R?" H 7305 4245 50  0000 L CNN
+F 1 "180R" H 7305 4185 50  0000 L CNN
+F 2 "" H 7275 4225 50  0000 C CNN
+F 3 "" H 7275 4225 50  0000 C CNN
+	1    7275 4225
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	6800 4050 7275 4050
+Wire Wire Line
+	7275 4050 7475 4050
+Wire Wire Line
+	6800 4050 6800 4000
+Wire Wire Line
+	7275 3975 7275 4050
+Wire Wire Line
+	7275 4050 7275 4125
+Connection ~ 7275 4050
+Wire Wire Line
+	7275 4325 7275 4400
+Connection ~ 7275 4400
+$Comp
+L D_Small D?
+U 1 1 58F762FB
+P 7475 3875
+F 0 "D?" H 7425 3955 50  0000 L CNN
+F 1 "1N4002" H 7350 4025 50  0000 L CNN
+F 2 "" V 7475 3875 50  0000 C CNN
+F 3 "" V 7475 3875 50  0000 C CNN
+	1    7475 3875
+	0    1    1    0   
+$EndComp
+$Comp
+L CP_Small C?
+U 1 1 58F763B1
+P 7475 4225
+F 0 "C?" H 7485 4295 50  0000 L CNN
+F 1 "?" H 7485 4145 50  0000 L CNN
+F 2 "" H 7475 4225 50  0000 C CNN
+F 3 "" H 7475 4225 50  0000 C CNN
+	1    7475 4225
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	7475 4125 7475 4050
+Wire Wire Line
+	7475 4050 7475 3975
+Connection ~ 7475 4050
+Wire Wire Line
+	7475 3775 7475 3700
+Connection ~ 7475 3700
+Wire Wire Line
+	7475 4325 7475 4400
+Connection ~ 7475 4400
+$Comp
+L CP_Small C?
+U 1 1 58F769B3
+P 5800 3700
+F 0 "C?" H 5810 3770 50  0000 L CNN
+F 1 "47u" H 5810 3620 50  0000 L CNN
+F 2 "" H 5800 3700 50  0000 C CNN
+F 3 "" H 5800 3700 50  0000 C CNN
+	1    5800 3700
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	5800 3600 5800 3150
+Connection ~ 5800 3150
+Wire Wire Line
+	5800 3800 5800 4400
+Connection ~ 5800 4400
+$Comp
+L CP_Small C?
+U 1 1 58F76D4B
+P 7800 4050
+F 0 "C?" H 7810 4120 50  0000 L CNN
+F 1 "47u" H 7810 3970 50  0000 L CNN
+F 2 "" H 7800 4050 50  0000 C CNN
+F 3 "" H 7800 4050 50  0000 C CNN
+	1    7800 4050
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	7800 3950 7800 3700
+Connection ~ 7800 3700
+Wire Wire Line
+	7800 4150 7800 4400
+Connection ~ 7800 4400
+$Comp
+L TEST_1P W?
+U 1 1 58F7C277
+P 8100 3700
+F 0 "W?" H 8100 3925 50  0000 C CNN
+F 1 "TEST_3V3" H 8100 3625 50  0000 C CNN
+F 2 "Connect:PINTST" H 8300 3700 50  0001 C CNN
+F 3 "" H 8300 3700 50  0000 C CNN
+	1    8100 3700
+	1    0    0    -1  
+$EndComp
+$Comp
+L TEST_1P W?
+U 1 1 58F7C325
+P 8100 3150
+F 0 "W?" H 8100 3375 50  0000 C CNN
+F 1 "TEST_5V" H 8100 3075 50  0000 C CNN
+F 2 "Connect:PINTST" H 8300 3150 50  0001 C CNN
+F 3 "" H 8300 3150 50  0000 C CNN
+	1    8100 3150
+	1    0    0    -1  
+$EndComp
+$Comp
+L TEST_1P W?
+U 1 1 58F7C3DD
+P 8100 4400
+F 0 "W?" H 8100 4625 50  0000 C CNN
+F 1 "TEST_GND" H 8100 4325 50  0000 C CNN
+F 2 "Connect:PINTST" H 8300 4400 50  0001 C CNN
+F 3 "" H 8300 4400 50  0000 C CNN
+	1    8100 4400
+	1    0    0    -1  
+$EndComp
+Connection ~ 8100 4400
+Connection ~ 8100 3700
+Connection ~ 8100 3150
+$EndSCHEMATC
