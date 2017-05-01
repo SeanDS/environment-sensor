@@ -1,4 +1,4 @@
-update=Thu 02 Feb 2017 21:09:43 GMT
+update=Sun 30 Apr 2017 17:27:44 BST
 version=1
 last_client=kicad
 [pcbnew]
@@ -59,5 +59,4 @@ LibName27=atmel
 LibName28=contrib
 LibName29=valves
 LibName30=lib/wiznet
-LibName31=lib/Sensors_STMicroelectronics
-LibName32=lib/Sensors_Bosch
+LibName31=lib/Sensors_Bosch

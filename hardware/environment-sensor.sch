@@ -29,7 +29,6 @@ LIBS:atmel
 LIBS:contrib
 LIBS:valves
 LIBS:wiznet
-LIBS:Sensors_STMicroelectronics
 LIBS:Sensors_Bosch
 LIBS:environment-sensor-cache
 EELAYER 25 0
@@ -53,7 +52,7 @@ F0 "Microcontroller" 60
 F1 "microcontroller.sch" 60
 F2 "SS_PHY" O R 6050 5150 60 
 F3 "SCLK" O R 6050 5350 60 
-F4 "RESET" O R 6050 5250 60 
+F4 "~RESET" O R 6050 5250 60 
 F5 "MISO" O R 6050 5450 60 
 F6 "MOSI" O R 6050 5550 60 
 F7 "SDA" O R 6050 5050 60 
@@ -69,7 +68,7 @@ S 7300 1000 1175 2650
 U 5870F6A9
 F0 "Network I/O" 60
 F1 "network.sch" 60
-F2 "RESET" I L 7300 3300 60 
+F2 "~RESET" I L 7300 3300 60 
 F3 "SS_PHY" I L 7300 3200 60 
 F4 "MOSI" I L 7300 3600 60 
 F5 "MISO" I L 7300 3500 60 
@@ -139,4 +138,33 @@ Wire Wire Line
 	7300 6025 6050 6025
 Wire Wire Line
 	7300 5725 6050 5725
+Wire Wire Line
+	6050 5150 6450 5150
+Wire Wire Line
+	6450 5150 6450 3200
+Wire Wire Line
+	6450 3200 7300 3200
+Wire Wire Line
+	6050 5250 6550 5250
+Wire Wire Line
+	6550 5250 6550 3300
+Wire Wire Line
+	6550 3300 7300 3300
+Wire Wire Line
+	7300 3400 6650 3400
+Wire Wire Line
+	6650 3400 6650 5350
+Connection ~ 6650 5350
+Wire Wire Line
+	7300 3500 6750 3500
+Wire Wire Line
+	6750 3500 6750 5450
+Wire Wire Line
+	6750 5450 6050 5450
+Wire Wire Line
+	7300 3600 6850 3600
+Wire Wire Line
+	6850 3600 6850 5550
+Wire Wire Line
+	6850 5550 6050 5550
 $EndSCHEMATC

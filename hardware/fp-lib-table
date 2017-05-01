@@ -1,6 +1,7 @@
 (fp_lib_table
-  (lib (name Wiznet_RB1-125BAG1A)(type Legacy)(uri "$(KIPRJMOD)/lib/Wiznet_RJ45.pretty/RB1-125BAG1A.mod")(options "")(descr "Wiznet RB1-125BAG1A Ethernet RJ45 connector"))
   (lib (name STMicroelectronics_Temp_Humid)(type KiCad)(uri "$(KIPRJMOD)/lib/STMicroelectronics_Temp_Humid.pretty")(options "")(descr "STMicroelectronics temperature and humidity sensors"))
   (lib (name Bosch_Environment_Sensor)(type KiCad)(uri "$(KIPRJMOD)/lib/Bosch_Environment_Sensor.pretty")(options "")(descr ""))
   (lib (name Luna_Optoelectronics_LDR)(type KiCad)(uri "$(KIPRJMOD)/lib/Luna_Optoelectronics_LDR.pretty")(options "")(descr ""))
+  (lib (name Board_Outlines)(type KiCad)(uri "$(KIPRJMOD)/lib/Board_Outlines.pretty")(options "")(descr ""))
+  (lib (name Wiznet_RJ45)(type KiCad)(uri "$(KIPRJMOD)/lib/Wiznet_RJ45.pretty")(options "")(descr ""))
 )

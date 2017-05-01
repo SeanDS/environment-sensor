@@ -29,7 +29,6 @@ LIBS:atmel
 LIBS:contrib
 LIBS:valves
 LIBS:wiznet
-LIBS:Sensors_STMicroelectronics
 LIBS:Sensors_Bosch
 LIBS:environment-sensor-cache
 EELAYER 25 0
@@ -51,10 +50,10 @@ GND
 Text Notes 5000 3450 0    60   ~ 0
 Enclosure must be aluminium to avoid hurting magnetic field measurements (mu << 1)\n\nhttps://physics.stackexchange.com/questions/6524/which-metals-can-cause-magnetic-interference-passively
 $Comp
-L Bosch_BME280 U?
+L Bosch_BME280 U3
 U 1 1 5893AF35
 P 7250 2400
-F 0 "U?" H 7250 2950 50  0000 C CNN
+F 0 "U3" H 7250 2950 50  0000 C CNN
 F 1 "Bosch_BME280" H 7250 1850 50  0000 C CNN
 F 2 "Bosch_Environment_Sensor:Bosch_BME280_LGA-8" H 7250 2400 60  0001 C CNN
 F 3 "" H 7250 2400 60  0000 C CNN
@@ -62,12 +61,12 @@ F 3 "" H 7250 2400 60  0000 C CNN
 	1    0    0    -1  
 $EndComp
 $Comp
-L C_Small C?
+L C_Small C31
 U 1 1 58F4F4F4
 P 5700 2400
-F 0 "C?" H 5750 2450 50  0000 L CNN
+F 0 "C31" H 5750 2450 50  0000 L CNN
 F 1 "100n" H 5750 2350 50  0000 L CNN
-F 2 "" H 5700 2400 50  0000 C CNN
+F 2 "Capacitors_SMD:C_1210" H 5700 2400 50  0001 C CNN
 F 3 "" H 5700 2400 50  0000 C CNN
 	1    5700 2400
 	1    0    0    -1  
@@ -79,23 +78,23 @@ SDA
 Text Notes 7700 2525 0    60   ~ 0
 Address = 1110110 (0x76)
 $Comp
-L R_Small R?
+L R_Small R26
 U 1 1 58F5028C
 P 6300 2450
-F 0 "R?" H 6350 2500 50  0000 L CNN
+F 0 "R26" H 6350 2500 50  0000 L CNN
 F 1 "4k7" H 6350 2400 50  0000 L CNN
-F 2 "" H 6300 2450 50  0000 C CNN
+F 2 "Resistors_SMD:R_1210" H 6300 2450 50  0001 C CNN
 F 3 "" H 6300 2450 50  0000 C CNN
 	1    6300 2450
 	1    0    0    -1  
 $EndComp
 $Comp
-L R_Small R?
+L R_Small R25
 U 1 1 58F50586
 P 6200 2450
-F 0 "R?" H 6050 2500 50  0000 L CNN
+F 0 "R25" H 6050 2500 50  0000 L CNN
 F 1 "4k7" H 6000 2400 50  0000 L CNN
-F 2 "" H 6200 2450 50  0000 C CNN
+F 2 "Resistors_SMD:R_1210" H 6200 2450 50  0001 C CNN
 F 3 "" H 6200 2450 50  0000 C CNN
 	1    6200 2450
 	1    0    0    -1  
@@ -103,34 +102,34 @@ $EndComp
 Text HLabel 5200 2100 0    60   Input ~ 0
 3V3A
 $Comp
-L C_Small C?
+L C_Small C30
 U 1 1 58F50E9D
 P 5300 2400
-F 0 "C?" H 5150 2450 50  0000 L CNN
+F 0 "C30" H 5150 2450 50  0000 L CNN
 F 1 "100n" H 5050 2350 50  0000 L CNN
-F 2 "" H 5300 2400 50  0000 C CNN
+F 2 "Capacitors_SMD:C_1210" H 5300 2400 50  0001 C CNN
 F 3 "" H 5300 2400 50  0000 C CNN
 	1    5300 2400
 	1    0    0    -1  
 $EndComp
 $Comp
-L L_Small L?
+L L_Small L3
 U 1 1 58F5F3B6
-P 5500 2000
-F 0 "L?" H 5530 2040 50  0000 L CNN
-F 1 "Wurth 74275043" H 5530 1960 50  0000 L CNN
-F 2 "" H 5500 2000 50  0000 C CNN
-F 3 "" H 5500 2000 50  0000 C CNN
-	1    5500 2000
+P 5500 1400
+F 0 "L3" H 5530 1440 50  0000 L CNN
+F 1 "Wurth WE-CBF" H 5530 1360 50  0000 L CNN
+F 2 "Choke_SMD:Choke_SMD_1206_Standard" H 5500 1400 50  0001 C CNN
+F 3 "" H 5500 1400 50  0000 C CNN
+	1    5500 1400
 	0    -1   -1   0   
 $EndComp
 $Comp
-L CONN_01X05 P?
+L CONN_01X05 P7
 U 1 1 58F69CD9
 P 7700 4725
-F 0 "P?" H 7700 5025 50  0000 C CNN
+F 0 "P7" H 7700 5025 50  0000 C CNN
 F 1 "PPD42" V 7800 4725 50  0000 C CNN
-F 2 "Terminal_Blocks:TerminalBlock_Pheonix_MKDS1.5-5pol" H 7700 4725 50  0001 C CNN
+F 2 "Connectors_Molex:Molex_KK-6410-05_05x2.54mm_Straight" H 7700 4725 50  0001 C CNN
 F 3 "" H 7700 4725 50  0000 C CNN
 	1    7700 4725
 	1    0    0    -1  
@@ -144,24 +143,20 @@ GND
 Text HLabel 6025 4725 0    60   Input ~ 0
 5VA
 $Comp
-L C_Small C?
+L C_Small C33
 U 1 1 58F4E0C6
 P 6625 4550
-F 0 "C?" H 6635 4620 50  0000 L CNN
+F 0 "C33" H 6635 4620 50  0000 L CNN
 F 1 "100n" H 6635 4470 50  0000 L CNN
-F 2 "" H 6625 4550 50  0000 C CNN
+F 2 "Capacitors_SMD:C_1210" H 6625 4550 50  0001 C CNN
 F 3 "" H 6625 4550 50  0000 C CNN
 	1    6625 4550
 	1    0    0    -1  
 $EndComp
 Wire Wire Line
-	6200 2000 6200 2300
+	6200 2000 6200 2350
 Wire Wire Line
-	6200 2300 6200 2350
-Wire Wire Line
-	6200 2300 6300 2300
-Wire Wire Line
-	6300 2300 6650 2300
+	6200 2300 6650 2300
 Wire Wire Line
 	7850 2400 7925 2400
 Wire Wire Line
@@ -171,13 +166,7 @@ Connection ~ 5700 2000
 Wire Wire Line
 	5700 2800 5700 2500
 Wire Wire Line
-	5200 2800 5300 2800
-Wire Wire Line
-	5300 2800 5700 2800
-Wire Wire Line
-	5700 2800 6600 2800
-Wire Wire Line
-	6600 2800 6650 2800
+	5200 2800 6650 2800
 Wire Wire Line
 	6650 2700 6600 2700
 Wire Wire Line
@@ -189,9 +178,7 @@ Wire Wire Line
 Wire Wire Line
 	6500 2400 6500 2600
 Wire Wire Line
-	6500 2600 6300 2600
-Wire Wire Line
-	6300 2600 6150 2600
+	6500 2600 6150 2600
 Wire Wire Line
 	6300 2600 6300 2550
 Connection ~ 6300 2600
@@ -200,9 +187,7 @@ Wire Wire Line
 Wire Wire Line
 	6550 2500 6550 2700
 Wire Wire Line
-	6550 2700 6200 2700
-Wire Wire Line
-	6200 2700 6150 2700
+	6550 2700 6150 2700
 Wire Wire Line
 	6200 2700 6200 2550
 Wire Wire Line
@@ -210,43 +195,27 @@ Wire Wire Line
 Connection ~ 6300 2300
 Connection ~ 6200 2700
 Wire Wire Line
-	5200 2100 5300 2100
-Wire Wire Line
-	5300 2100 6650 2100
+	5200 2100 6650 2100
 Wire Wire Line
 	5300 2800 5300 2500
 Connection ~ 5700 2800
-Wire Wire Line
-	5300 2000 5300 2100
-Wire Wire Line
-	5300 2100 5300 2300
 Connection ~ 5300 2100
 Wire Wire Line
-	5600 2000 5700 2000
-Wire Wire Line
-	5700 2000 6200 2000
-Wire Wire Line
-	6200 2000 6650 2000
-Wire Wire Line
-	5400 2000 5300 2000
+	5600 2000 6650 2000
 Connection ~ 5300 2800
 $Comp
-L CP_Small C?
+L CP_Small C32
 U 1 1 58F4E384
 P 6475 4550
-F 0 "C?" H 6485 4620 50  0000 L CNN
-F 1 "47u" H 6485 4470 50  0000 L CNN
-F 2 "" H 6475 4550 50  0000 C CNN
+F 0 "C32" H 6485 4620 50  0000 L CNN
+F 1 "10u" H 6485 4470 50  0000 L CNN
+F 2 "Capacitors_ThroughHole:C_Radial_D5_L11_P2" H 6475 4550 50  0001 C CNN
 F 3 "" H 6475 4550 50  0000 C CNN
 	1    6475 4550
 	-1   0    0    1   
 $EndComp
 Wire Wire Line
-	6025 4375 6475 4375
-Wire Wire Line
-	6475 4375 6625 4375
-Wire Wire Line
-	6625 4375 7350 4375
+	6025 4375 7350 4375
 Wire Wire Line
 	6475 4375 6475 4450
 Wire Wire Line
@@ -258,11 +227,7 @@ Wire Wire Line
 	7350 4525 7500 4525
 Connection ~ 6625 4375
 Wire Wire Line
-	6300 4725 6475 4725
-Wire Wire Line
-	6475 4725 6625 4725
-Wire Wire Line
-	6625 4725 7500 4725
+	6025 4725 7500 4725
 Wire Wire Line
 	6475 4725 6475 4650
 Wire Wire Line
@@ -286,45 +251,45 @@ Dust sensor
 Text Notes 6450 1675 0    60   ~ 0
 Tempertature/humidity/pressure sensor
 $Comp
-L R_Small R?
+L R_Small R29
 U 1 1 58F597C3
 P 6850 5100
-F 0 "R?" H 6700 5100 50  0000 L CNN
+F 0 "R29" H 6700 5100 50  0000 L CNN
 F 1 "10k" H 6675 5175 50  0000 L CNN
-F 2 "" H 6850 5100 50  0000 C CNN
+F 2 "Resistors_SMD:R_1210" H 6850 5100 50  0001 C CNN
 F 3 "" H 6850 5100 50  0000 C CNN
 	1    6850 5100
 	-1   0    0    1   
 $EndComp
 $Comp
-L R_Small R?
+L R_Small R27
 U 1 1 58F5987E
 P 6675 5100
-F 0 "R?" H 6725 5100 50  0000 L CNN
+F 0 "R27" H 6725 5100 50  0000 L CNN
 F 1 "10k" H 6725 5175 50  0000 L CNN
-F 2 "" H 6675 5100 50  0000 C CNN
+F 2 "Resistors_SMD:R_1210" H 6675 5100 50  0001 C CNN
 F 3 "" H 6675 5100 50  0000 C CNN
 	1    6675 5100
 	-1   0    0    1   
 $EndComp
 $Comp
-L R_Small R?
+L R_Small R30
 U 1 1 58F59C27
 P 6850 5400
-F 0 "R?" H 6700 5400 50  0000 L CNN
+F 0 "R30" H 6700 5400 50  0000 L CNN
 F 1 "10k" H 6675 5475 50  0000 L CNN
-F 2 "" H 6850 5400 50  0000 C CNN
+F 2 "Resistors_SMD:R_1210" H 6850 5400 50  0001 C CNN
 F 3 "" H 6850 5400 50  0000 C CNN
 	1    6850 5400
 	-1   0    0    1   
 $EndComp
 $Comp
-L R_Small R?
+L R_Small R28
 U 1 1 58F59C75
 P 6675 5400
-F 0 "R?" H 6725 5400 50  0000 L CNN
+F 0 "R28" H 6725 5400 50  0000 L CNN
 F 1 "10k" H 6725 5475 50  0000 L CNN
-F 2 "" H 6675 5400 50  0000 C CNN
+F 2 "Resistors_SMD:R_1210" H 6675 5400 50  0001 C CNN
 F 3 "" H 6675 5400 50  0000 C CNN
 	1    6675 5400
 	-1   0    0    1   
@@ -332,54 +297,33 @@ $EndComp
 Wire Wire Line
 	6600 5250 6675 5250
 Wire Wire Line
-	6675 5200 6675 5250
-Wire Wire Line
-	6675 5250 6675 5300
+	6675 5200 6675 5300
 Connection ~ 6675 5250
 Wire Wire Line
 	6675 5000 6675 4825
 Wire Wire Line
 	6850 5000 6850 4625
 Wire Wire Line
-	6850 5200 6850 5250
-Wire Wire Line
-	6850 5250 6850 5300
+	6850 5200 6850 5300
 Wire Wire Line
 	6925 5250 6850 5250
 Connection ~ 6850 5250
 Text HLabel 6600 5575 0    60   Input ~ 0
 GND
 Wire Wire Line
-	6600 5575 6675 5575
-Wire Wire Line
-	6675 5575 6850 5575
+	6600 5575 6850 5575
 Wire Wire Line
 	6675 5575 6675 5500
 Wire Wire Line
 	6850 5575 6850 5500
 Connection ~ 6675 5575
 $Comp
-L L_Small L?
-U 1 1 58F5B341
-P 6200 4725
-F 0 "L?" H 6230 4765 50  0000 L CNN
-F 1 "330u" H 6230 4685 50  0000 L CNN
-F 2 "" H 6200 4725 50  0000 C CNN
-F 3 "" H 6200 4725 50  0000 C CNN
-	1    6200 4725
-	0    -1   -1   0   
-$EndComp
-Wire Wire Line
-	6025 4725 6100 4725
-Text Notes 6075 4325 0    60   ~ 0
-1.2kHz low pass
-$Comp
-L CONN_01X02 P?
+L CONN_01X02 P6
 U 1 1 58F66D18
 P 4200 4475
-F 0 "P?" H 4200 4625 50  0000 C CNN
-F 1 "NORPS-12" V 4300 4475 50  0000 C CNN
-F 2 "Luna_Optoelectronics_LDR:NORPS-12" H 4200 4475 50  0001 C CNN
+F 0 "P6" H 4200 4625 50  0000 C CNN
+F 1 "NSL-19M51" V 4300 4475 50  0000 C CNN
+F 2 "TO_SOT_Packages_THT:TO-18_2Pin" H 4200 4475 50  0001 C CNN
 F 3 "" H 4200 4475 50  0000 C CNN
 	1    4200 4475
 	1    0    0    -1  
@@ -391,16 +335,14 @@ Wire Wire Line
 Text HLabel 3750 4525 0    60   Output ~ 0
 LDR_OUT
 Wire Wire Line
-	4000 4525 3825 4525
-Wire Wire Line
-	3825 4525 3750 4525
+	3750 4525 4000 4525
 $Comp
-L R_Small R?
+L R_Small R24
 U 1 1 58F672FB
 P 3825 4700
-F 0 "R?" H 3855 4720 50  0000 L CNN
+F 0 "R24" H 3855 4720 50  0000 L CNN
 F 1 "10k" H 3855 4660 50  0000 L CNN
-F 2 "" H 3825 4700 50  0000 C CNN
+F 2 "Resistors_SMD:R_1210" H 3825 4700 50  0001 C CNN
 F 3 "" H 3825 4700 50  0000 C CNN
 	1    3825 4700
 	1    0    0    -1  
@@ -416,4 +358,16 @@ Wire Wire Line
 	3825 4875 3825 4800
 Text Notes 3650 4200 0    60   ~ 0
 Light sensor
+Text Label 5775 1400 0    60   ~ 0
+3V3D
+Wire Wire Line
+	5775 1400 5600 1400
+Text HLabel 5200 1400 0    60   Input ~ 0
+3V3A
+Wire Wire Line
+	5200 1400 5400 1400
+Wire Wire Line
+	5300 2300 5300 2100
+Text Label 5600 2000 2    60   ~ 0
+3V3D
 $EndSCHEMATC
