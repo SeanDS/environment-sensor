@@ -1,6 +1,10 @@
-update=Sun 18 Jun 2017 17:11:19 BST
+update=22/05/2015 07:44:53
 version=1
 last_client=kicad
+[general]
+version=1
+RootSch=
+BoardNm=
 [pcbnew]
 version=1
 LastNetListRead=
@@ -23,11 +27,9 @@ ModuleOutlineThickness=0.150000000000
 [cvpcb]
 version=1
 NetIExt=net
-[general]
-version=1
 [eeschema]
 version=1
-LibDir=lib
+LibDir=
 [eeschema/libraries]
 LibName1=power
 LibName2=device
@@ -58,6 +60,3 @@ LibName26=opto
 LibName27=atmel
 LibName28=contrib
 LibName29=valves
-LibName30=lib/wiznet
-LibName31=lib/Sensors_Bosch
-LibName32=lib/cetus

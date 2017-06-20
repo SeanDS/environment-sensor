@@ -3,5 +3,5 @@
   (lib (name Bosch_Environment_Sensor)(type KiCad)(uri "$(KIPRJMOD)/lib/Bosch_Environment_Sensor.pretty")(options "")(descr ""))
   (lib (name Luna_Optoelectronics_LDR)(type KiCad)(uri "$(KIPRJMOD)/lib/Luna_Optoelectronics_LDR.pretty")(options "")(descr ""))
   (lib (name Board_Outlines)(type KiCad)(uri "$(KIPRJMOD)/lib/Board_Outlines.pretty")(options "")(descr ""))
-  (lib (name Wiznet_RJ45)(type KiCad)(uri "$(KIPRJMOD)/lib/Wiznet_RJ45.pretty")(options "")(descr ""))
+  (lib (name Cetus_RJ45)(type KiCad)(uri "$(KIPRJMOD)/lib/Cetus_RJ45.pretty")(options "")(descr ""))
 )

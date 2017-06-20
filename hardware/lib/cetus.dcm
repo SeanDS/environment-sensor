@@ -1,0 +1,8 @@
+EESchema-DOCLIB  Version 2.0
+#
+$CMP J1B1211CCD
+D Cetus J1B1211CCD
+K Single RJ45 connector module with 10/100 BASE-TX magnetics and LEDs
+$ENDCMP
+#
+#End Doc Library
