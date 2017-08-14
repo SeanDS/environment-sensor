@@ -1,4 +1,4 @@
-update=Sun 18 Jun 2017 17:11:19 BST
+update=Thu 29 Jun 2017 10:51:27 BST
 version=1
 last_client=kicad
 [pcbnew]
@@ -61,3 +61,13 @@ LibName29=valves
 LibName30=lib/wiznet
 LibName31=lib/Sensors_Bosch
 LibName32=lib/cetus
+[schematic_editor]
+version=1
+PageLayoutDescrFile=
+PlotDirectoryName=
+SubpartIdSeparator=0
+SubpartFirstId=65
+NetFmtName=
+SpiceForceRefPrefix=0
+SpiceUseNetNumbers=0
+LabSize=60
