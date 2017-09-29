@@ -88,7 +88,7 @@ uint32_t read24(uint8_t reg)
       return val;
     } else
     {
-      usb_send_message("Could not connect to sensor");
+      //send_str(PSTR("Could not connect to sensor"));
     }
   }
 }
@@ -138,7 +138,7 @@ void bme280_init()
     {
       uint8_t val = i2c_read_nack();
 
-      usb_send_byte((char) val);
+      //usb_send_byte((char) val);
 
       i2c_stop();
     }

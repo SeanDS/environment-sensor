@@ -1,6 +1,6 @@
-[submodule "software/firmware/usb/lufa"]
-	path = software/firmware/sensor/lufa
-	url = git@github.com:abcminiuser/lufa.git
 [submodule "software/firmware/sensor/ioLibrary_Driver"]
 	path = software/firmware/sensor/ioLibrary_Driver
 	url = git@github.com:Wiznet/ioLibrary_Driver.git
+[submodule "software/firmware/sensor/dmbs"]
+	path = software/firmware/sensor/dmbs
+	url = git@github.com:abcminiuser/dmbs.git

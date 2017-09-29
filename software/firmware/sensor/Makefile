@@ -2,14 +2,12 @@
 
 MCU          = atmega32u4
 ARCH         = AVR8
-BOARD        = MINIMUS
 F_CPU        = 16000000
 F_USB        = $(F_CPU)
 OPTIMIZATION = s
-TARGET       = usb
-SRC          = $(TARGET).c descriptors.c adc.c bme280.c ftoa.c i2c.c ioLibrary_Driver/Ethernet/socket.c ioLibrary_Driver/Ethernet/wizchip_conf.c ioLibrary_Driver/Ethernet/W5500/w5500.c ioLibrary_Driver/Internet/DHCP/dhcp.c $(LUFA_SRC_USB) $(LUFA_SRC_USBCLASS)
-LUFA_PATH    = lufa/LUFA
-CC_FLAGS     = -DUSE_LUFA_CONFIG_HEADER -IConfig/ -I ioLibrary_Driver/Ethernet/ -I ioLibrary_Driver/Ethernet/W5500/ -I ioLibrary_Driver/Internet/DHCP/
+TARGET       = sensor
+SRC          = $(TARGET).c adc.c usb.c bme280.c ftoa.c i2c.c ioLibrary_Driver/Ethernet/socket.c ioLibrary_Driver/Ethernet/wizchip_conf.c ioLibrary_Driver/Ethernet/W5500/w5500.c ioLibrary_Driver/Internet/DHCP/dhcp.c
+CC_FLAGS     = -I ioLibrary_Driver/Ethernet/ -I ioLibrary_Driver/Ethernet/W5500/ -I ioLibrary_Driver/Internet/DHCP/
 # floating point support in fprintf()
 LD_FLAGS     = -Wl,-u,vfprintf -lprintf_flt
 AVRDUDE_PROGRAMMER = atmelice
@@ -17,18 +15,13 @@ AVRDUDE_PROGRAMMER = atmelice
 # Default target
 all:
 
-# Include LUFA-specific DMBS extension modules
-DMBS_LUFA_PATH ?= $(LUFA_PATH)/Build/LUFA
-include $(DMBS_LUFA_PATH)/lufa-sources.mk
-include $(DMBS_LUFA_PATH)/lufa-gcc.mk
-
 # Include common DMBS build system modules
-DMBS_PATH      ?= $(LUFA_PATH)/Build/DMBS/DMBS
+DMBS_PATH ?= dmbs/DMBS
 include $(DMBS_PATH)/core.mk
+include $(DMBS_PATH)/gcc.mk
 include $(DMBS_PATH)/cppcheck.mk
 include $(DMBS_PATH)/doxygen.mk
 include $(DMBS_PATH)/dfu.mk
-include $(DMBS_PATH)/gcc.mk
 include $(DMBS_PATH)/hid.mk
 include $(DMBS_PATH)/avrdude.mk
 include $(DMBS_PATH)/atprogram.mk
