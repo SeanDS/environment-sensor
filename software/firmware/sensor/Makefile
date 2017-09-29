@@ -7,9 +7,9 @@ F_CPU        = 16000000
 F_USB        = $(F_CPU)
 OPTIMIZATION = s
 TARGET       = usb
-SRC          = $(TARGET).c descriptors.c bme280.c ftoa.c i2c.c $(LUFA_SRC_USB) $(LUFA_SRC_USBCLASS)
+SRC          = $(TARGET).c descriptors.c adc.c bme280.c ftoa.c i2c.c ioLibrary_Driver/Ethernet/socket.c ioLibrary_Driver/Ethernet/wizchip_conf.c ioLibrary_Driver/Ethernet/W5500/w5500.c ioLibrary_Driver/Internet/DHCP/dhcp.c $(LUFA_SRC_USB) $(LUFA_SRC_USBCLASS)
 LUFA_PATH    = lufa/LUFA
-CC_FLAGS     = -DUSE_LUFA_CONFIG_HEADER -IConfig/
+CC_FLAGS     = -DUSE_LUFA_CONFIG_HEADER -IConfig/ -I ioLibrary_Driver/Ethernet/ -I ioLibrary_Driver/Ethernet/W5500/ -I ioLibrary_Driver/Internet/DHCP/
 # floating point support in fprintf()
 LD_FLAGS     = -Wl,-u,vfprintf -lprintf_flt
 AVRDUDE_PROGRAMMER = atmelice
