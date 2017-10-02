@@ -27,9 +27,9 @@
 #include "i2c.h"
 #include "bme280.h"
 
-// server
-//uint8_t server_ip[4] = {192, 168, 0, 40};
-//uint16_t server_port = 50000;
+// sensor server settings
+const uint8_t server_ip[] = {192, 168, 0, 40};
+const uint16_t server_port = 50000;
 
 // timer overflow counters
 uint8_t pwm_timer_ovf_count = 0;
@@ -43,6 +43,9 @@ bool dust_measurement_ready = false;
 
 // physical link check flag
 bool phy_link_check_pending = false;
+
+// data send flag
+bool data_send_pending = false;
 
 // dust sensor low pulse occupancies
 uint32_t p1 = 0;
@@ -148,6 +151,9 @@ ISR(TIMER3_OVF_vect) {
 
 		// set physical link check flag
 		phy_link_check_pending = true;
+
+		// FIXME: move this out to its own counter
+		data_send_pending = true;
 	}
 }
 
@@ -180,6 +186,11 @@ int main(void)
 	// DHCP data buffer
 	uint8_t dhcp_buf[DATA_BUF_SIZE];
 
+	// data buffer
+	uint8_t data_buffer[DATA_BUF_SIZE];
+
+	int8_t sock_status;
+
 	// current and previous DHCP states
 	int8_t previous_dhcp_state;
 	int8_t current_dhcp_state;
@@ -211,7 +222,7 @@ int main(void)
 	reg_wizchip_cs_cbfunc(wizchip_select, wizchip_deselect);
 	reg_wizchip_spi_cbfunc(spi_receive, spi_send);
 
-	DHCP_init(0, dhcp_buf);
+	DHCP_init(DHCP_SOCKET, dhcp_buf);
 
 	general_timer_enable();
 
@@ -314,6 +325,22 @@ int main(void)
 				usb_write_line("Humidity: %.2f", env_h);
 				usb_write_line("Light: %u", env_l);
 			}
+
+			if (data_send_pending) {
+				sock_status = socket(SENSOR_DATA_SOCKET, Sn_MR_TCP, NULL, NULL);
+
+				if (connect(SENSOR_DATA_SOCKET, server_ip, server_port)) {
+					PORTC &= ~(1 << PC6);
+
+					uint8_t msg[] = "hi there\0";
+
+					int32_t send_len = send(SENSOR_DATA_SOCKET, msg, strlen(msg));
+			  } else {
+					PORTC |= (1 << PC6);
+				}
+
+				data_send_pending = false;
+			}
 		}
 	}
 }
@@ -332,6 +359,9 @@ void hardware_init(void)
 
 	// disable W5500 chip select
   PORTB |= (1 << PORTB6);
+
+	// set LED pins as outputs
+	DDRC |= (1 << PC6) | (1 << PC7);
 
 	// set dust sensor P1 and P2 inputs
 	DDRD &= ~(1 << PORTD6) | ~(1 << PORTD7);
