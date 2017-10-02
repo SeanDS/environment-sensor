@@ -10,12 +10,12 @@
 void wizchip_select(void);
 void wizchip_deselect(void);
 
-void dhcp_timer_enable(void);
-void sensor_timer_enable(void);
+void general_timer_enable(void);
+void pwm_timer_enable(void);
 
 void hardware_init(void);
 
 void usb_serial_putstr(char*);
-void usb_send_message(const char*, ...);
+void usb_write_line(const char*, ...);
 
 #endif /* _SENSOR_H_ */

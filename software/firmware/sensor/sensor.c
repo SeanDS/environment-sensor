@@ -32,19 +32,17 @@
 //uint16_t server_port = 50000;
 
 // timer overflow counters
-uint16_t dhcp_timer_ovf_count = 0;
-uint16_t env_timer_ovf_count = 0;
+uint8_t pwm_timer_ovf_count = 0;
 uint16_t dust_timer_ovf_count = 0;
+uint8_t env_timer_ovf_count = 0;
+uint8_t dhcp_timer_ovf_count = 0;
 
-// whether a new measurements have been made
-bool env_measurement_ready = false;
+// measurement flags controlled by interrupts
+bool env_measurement_pending = false;
 bool dust_measurement_ready = false;
 
-// environment sensor values
-volatile float env_t = 0;
-volatile double env_p = 0;
-volatile float env_h = 0;
-volatile uint16_t env_l = 0;
+// physical link check flag
+bool phy_link_check_pending = false;
 
 // dust sensor low pulse occupancies
 uint32_t p1 = 0;
@@ -62,28 +60,17 @@ wiz_NetInfo net_info = { .mac 	= {0x00, 0x08, 0xdc, 0xab, 0xcd, 0xef},
 												 .dhcp = NETINFO_DHCP };
 
 void wizchip_select(void) {
-	//usb_send_message("[S]\n");
+	//usb_write_line("[S]");
 	PORTB &= ~(1 << PORTB6);
 }
 
 void wizchip_deselect(void) {
-	//usb_send_message("\n[D]\n");
+	//usb_write_line("");
+	//usb_write_line("[D]");
 	PORTB |= (1 << PORTB6);
 }
 
-void dhcp_timer_enable(void) {
-	// enable first timer
-	TIMSK1 |= (1 << TOIE1);
-
-	// set initial value to 0
-	TCNT1 = 0x00;
-
-	// start timer with 1/1 scaling
-	// this gives overflows every (1/16e6)*65536 = 4.096 ms
-	TCCR1B = (1 << CS10);
-}
-
-void sensor_timer_enable(void) {
+void general_timer_enable(void) {
 	// enable first timer
 	TIMSK3 |= (1 << TOIE3);
 
@@ -95,26 +82,32 @@ void sensor_timer_enable(void) {
 	TCCR3B = (1 << CS30);
 }
 
-/*  DHCP 1 second timer interrupt.
- *  This counts overflows of the AVR's TIMER1. After enough overflows, it fires
- *  the DHCP time handler.
- */
-ISR(TIMER1_OVF_vect) {
-	dhcp_timer_ovf_count++;
+void pwm_timer_enable(void) {
+	// enable first timer
+	TIMSK0 |= (1 << TOIE0);
 
-	if (dhcp_timer_ovf_count >= 244) {
-		// trigger every ~1 second
-		DHCP_time_handler();
+	// set initial value to 0
+	TCNT0 = 0x00;
 
-		dhcp_timer_ovf_count = 0;
-	}
+	// start timer with 1/1 scaling
+	// this gives overflows every (1/16e6)*256 = 16 us
+	TCCR0B = (1 << CS00);
 }
 
+/*
+ *  DHCP and sensor timer interrupt.
+ *
+ *  This counts overflows of the AVR's TIMER3. It is responsible for triggering
+ *  the DHCP library's second handler, measuring the dust sensor low pulse
+ *  occupancy and flagging measurements to be made from the BME280.
+ */
 ISR(TIMER3_OVF_vect) {
 	// triggers every 4.096 ms
 
+	// increment overflow counters
 	dust_timer_ovf_count++;
 	env_timer_ovf_count++;
+	dhcp_timer_ovf_count++;
 
 	// measure dust triggers: add 1 if the dust sensor output is pulled low
 	// (indicating dust), else add 0
@@ -139,16 +132,43 @@ ISR(TIMER3_OVF_vect) {
 
 	// approx 1 second
 	if (env_timer_ovf_count >= 244) {
-		// take measurements
-		env_t = bme280_read_temperature();
-		env_p = bme280_read_pressure();
-		env_h = bme280_read_humidity();
-		env_l = analog_read(ADC_8);
-
-		env_measurement_ready = true;
+		env_measurement_pending = true;
 
 		// reset timer
 		env_timer_ovf_count = 0;
+	}
+
+	// approx 1 second
+	if (dhcp_timer_ovf_count >= 244) {
+		// call DHCP second handler
+		DHCP_time_handler();
+
+		// reset DHCP overflow counter
+		dhcp_timer_ovf_count = 0;
+
+		// set physical link check flag
+		phy_link_check_pending = true;
+	}
+}
+
+/*
+ *  PWM timer interrupt.
+ */
+ISR(TIMER0_OVF_vect) {
+	// increment overflow counter
+	pwm_timer_ovf_count++;
+
+	if (pwm_timer_ovf_count >= 125) {
+		// switch on
+		PORTB |= (1 << PORTB4);
+	} else {
+		// switch off
+		PORTB &= ~(1 << PORTB4);
+	}
+
+	if (pwm_timer_ovf_count >= 128) {
+		// reset
+		pwm_timer_ovf_count = 0;
 	}
 }
 
@@ -160,25 +180,29 @@ int main(void)
 	// DHCP data buffer
 	uint8_t dhcp_buf[DATA_BUF_SIZE];
 
+	// current and previous DHCP states
+	int8_t previous_dhcp_state;
+	int8_t current_dhcp_state;
+
 	// socket buffer sizes, in kB
 	uint8_t wiznet_buf_size[] = {2, 2, 2, 2, 2, 2, 2, 2};
 
-	int8_t sck_status = 0;
-	uint8_t ip_leased = 0;
-	uint8_t socket_opened = 0;
+	// IP address
+	uint8_t ip[] = {0, 0, 0, 0};
 
 	uint16_t dust_1_copy;
 	uint16_t dust_2_copy;
-	float env_t_copy;
-	double env_p_copy;
-	float env_h_copy;
-	uint16_t env_l_copy;
+	float env_t;
+	double env_p;
+	float env_h;
+	uint16_t env_l;
 
-	bool run_user_applications = false;
+	// network status flags
+	bool dhcp_ready = false;
+	bool phy_link_ready = false;
 
 	hardware_init();
-
-	sensor_timer_enable();
+	pwm_timer_enable();
 
 	wizchip_init(wiznet_buf_size, wiznet_buf_size);
 	wizchip_setnetinfo(&net_info);
@@ -189,44 +213,77 @@ int main(void)
 
 	DHCP_init(0, dhcp_buf);
 
-	dhcp_timer_enable();
+	general_timer_enable();
 
 	for (;;)
 	{
-		switch (DHCP_run())
-		{
+		// remember previous DHCP state
+		previous_dhcp_state = current_dhcp_state;
+
+		// run DHCP to acquire or maintain IP address
+		current_dhcp_state = DHCP_run();
+
+		switch (current_dhcp_state) {
 			case DHCP_IP_ASSIGN:
-				usb_send_message("IP assigned\n");
+			  usb_write_line("[info] IP assigned");
 				break;
 			case DHCP_IP_CHANGED:
-				usb_send_message("IP changed\n");
+				usb_write_line("[info] IP changed");
 				break;
 			case DHCP_IP_LEASED:
-			  run_user_applications = true;
+				// DHCP negotiation successful
+
+				// signal DHCP ready
+			  dhcp_ready = true;
+
 				break;
 			case DHCP_FAILED:
-				usb_send_message("DHCP failed\n");
+				// DHCP negotiation failed
+
+				// signal DHCP not ready
+			  dhcp_ready = false;
+
+				usb_write_line("[warning] DHCP failed");
+
 				break;
 			default:
+				// DHCP negotiation in progress
+
+				// signal DHCP not ready
+			  dhcp_ready = false;
+
 				break;
 		}
 
-		if (run_user_applications) {
-			// if ((ip_leased == 1) && (socket_opened == 0)) {
-			// 	sck_status = socket(1, Sn_MR_TCP, 80, 0x0);
-			// 	usb_serial_write("IP leased; opened socket 1\n", 27);
-			//
-			// 	socket_opened = 1;
-			// }
-			//
-			// if (ip_leased == 1) {
-			// 	usb_send_message("Leased\n");
-			// }
-			//
-			// if (socket_opened == 1) {
-			// 	usb_send_message("Socket opened\n");
-			// }
+		if (current_dhcp_state != previous_dhcp_state) {
+			// state has changed
 
+			if (current_dhcp_state == DHCP_IP_LEASED) {
+				// avoid interrupts while reading IP
+				ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
+					getIPfromDHCP(ip);
+				}
+
+				usb_write_line("[info] IP leased: %u.%u.%u.%u", ip[0], ip[1], ip[2], ip[3]);
+			}
+		}
+
+		if (phy_link_check_pending) {
+			// check physical link
+			if (wizphy_getphylink() == PHY_LINK_OFF) {
+				usb_write_line("[warning] physical link offline");
+
+				// signal physical link not ready
+				phy_link_ready = false;
+			} else {
+				// signal physical link ready
+				phy_link_ready = true;
+			}
+
+			phy_link_check_pending = false;
+		}
+
+		if (dhcp_ready && phy_link_ready) {
 			if (dust_measurement_ready) {
 				// avoid interrupts while reading sensor values
 				ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
@@ -237,34 +294,25 @@ int main(void)
 				// reset
 				dust_measurement_ready = false;
 
-				usb_send_message("Dust 1: %u\nDust 2: %u\n", dust_1_copy, dust_2_copy);
+				usb_write_line("Dust 1: %u", dust_1_copy);
+				usb_write_line("Dust 2: %u", dust_2_copy);
 			}
 
-			if (env_measurement_ready) {
-				// avoid interrupts while reading sensor values
-				ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
-					env_t_copy = env_t;
-					env_p_copy = env_p;
-					env_h_copy = env_h;
-					env_l_copy = env_l;
-				}
+			if (env_measurement_pending) {
+				// take measurements
+				env_t = bme280_read_temperature();
+				env_p = bme280_read_pressure();
+				env_h = bme280_read_humidity();
+				env_l = analog_read(ADC_8);
 
 				// reset
-				env_measurement_ready = false;
+				env_measurement_pending = false;
 
 				// float support below needs linker flags: -Wl,-u,vfprintf -lprintf_flt
-				usb_send_message("Temperature: %.2f\nPressure: %.2f\nHumidity: %.2f\nLight: %u\n",
-				  env_t_copy, env_p_copy, env_h_copy, env_l_copy);
-
-				// if ((ip_leased == 1) && (socket_opened == 1)) {
-				// 	char msg[] = "data\0";
-				// 	usb_send_message("sck: %i\n", sck_status);
-				// 	int8_t c_status = connect(1, server_ip, server_port);
-				// 	usb_send_message("connect: %i\n", c_status);
-				// 	int32_t s_status = send(1, msg, strlen(msg));
-				// 	usb_send_message("send: %i\n", s_status);
-				// 	disconnect(1);
-				// }
+				usb_write_line("Temperature: %.2f", env_t);
+				usb_write_line("Pressure: %.2f", env_p);
+				usb_write_line("Humidity: %.2f", env_h);
+				usb_write_line("Light: %u", env_l);
 			}
 		}
 	}
@@ -333,7 +381,7 @@ void usb_serial_putstr(char* str)
 	}
 }
 
-void usb_send_message(const char *format, ...) {
+void usb_write_line(const char *str, ...) {
 	// USB message buffer
 	static char usb_buf[1024];
 
@@ -341,13 +389,16 @@ void usb_send_message(const char *format, ...) {
 	va_list args;
 
 	// start of variable arguments, with format the last required argument
-	va_start(args, format);
+	va_start(args, str);
 
 	// variable argument print, (overflow safe)
-	vsnprintf(usb_buf, sizeof(usb_buf), format, args);
+	vsnprintf(usb_buf, sizeof(usb_buf), str, args);
 
 	// end of variable arguments
 	va_end(args);
+
+	// append newline characters
+	strcat(usb_buf, "\r\n");
 
 	// send USB string
 	usb_serial_putstr(usb_buf);
