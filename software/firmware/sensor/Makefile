@@ -6,7 +6,7 @@ F_CPU        = 16000000
 F_USB        = $(F_CPU)
 OPTIMIZATION = s
 TARGET       = sensor
-SRC          = $(TARGET).c adc.c usb.c bme280.c ftoa.c i2c.c ioLibrary_Driver/Ethernet/socket.c ioLibrary_Driver/Ethernet/wizchip_conf.c ioLibrary_Driver/Ethernet/W5500/w5500.c ioLibrary_Driver/Internet/DHCP/dhcp.c
+SRC          = $(TARGET).c usb.c adc.c spi.c i2c.c bme280.c ioLibrary_Driver/Ethernet/socket.c ioLibrary_Driver/Ethernet/wizchip_conf.c ioLibrary_Driver/Ethernet/W5500/w5500.c ioLibrary_Driver/Internet/DHCP/dhcp.c
 CC_FLAGS     = -I ioLibrary_Driver/Ethernet/ -I ioLibrary_Driver/Ethernet/W5500/ -I ioLibrary_Driver/Internet/DHCP/
 # floating point support in fprintf()
 LD_FLAGS     = -Wl,-u,vfprintf -lprintf_flt
