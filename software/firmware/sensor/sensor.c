@@ -1,5 +1,4 @@
-/** \file
- *
+/**
  *  Temperature/pressure/humidity readout over ethernet with USB virtual serial
  *  port debugging.
  *
@@ -31,16 +30,13 @@
 // USB stream
 FILE usb_stream = FDEV_SETUP_STREAM(usb_serial_putchar, usb_serial_getchar, _FDEV_SETUP_RW);
 
-// sensor server settings
-const uint8_t server_ip[] = {192, 168, 0, 40};
-const uint16_t server_port = 50000;
+uint8_t payload[DATA_BUF_SIZE];
 
 // timer overflow counters
 uint8_t pwm_timer_ovf_count = 0;
 uint16_t dust_timer_ovf_count = 0;
 uint8_t env_timer_ovf_count = 0;
 uint8_t dhcp_timer_ovf_count = 0;
-uint8_t data_timer_ovf_count = 0;
 
 // measurement flags controlled by interrupts
 bool env_measurement_pending = false;
@@ -48,9 +44,6 @@ bool dust_measurement_ready = false;
 
 // physical link check flag
 bool phy_link_check_pending = false;
-
-// data send flag
-bool data_send_pending = false;
 
 // dust sensor low pulse occupancies
 uint32_t p1 = 0;
@@ -113,7 +106,6 @@ ISR(TIMER3_OVF_vect) {
 	dust_timer_ovf_count++;
 	env_timer_ovf_count++;
 	dhcp_timer_ovf_count++;
-	data_timer_ovf_count++;
 
 	// measure dust triggers: add 1 if the dust sensor output is pulled low
 	// (indicating dust), else add 0
@@ -155,13 +147,6 @@ ISR(TIMER3_OVF_vect) {
 		// set physical link check flag
 		phy_link_check_pending = true;
 	}
-
-	if (data_timer_ovf_count >= 244) {
-		data_send_pending = true;
-
-		// reset counter
-		data_timer_ovf_count = 0;
-	}
 }
 
 /*
@@ -192,11 +177,6 @@ int main(void)
 {
 	// DHCP data buffer
 	uint8_t dhcp_buf[DATA_BUF_SIZE];
-
-	// data buffer
-	uint8_t data_buffer[DATA_BUF_SIZE];
-
-	int8_t sock_status;
 
 	// current and previous DHCP states
 	int8_t previous_dhcp_state;
@@ -332,23 +312,10 @@ int main(void)
 				printf_P(PSTR("Pressure: %.2f\r\n"), env_p);
 				printf_P(PSTR("Humidity: %.2f\r\n"), env_h);
 				printf_P(PSTR("Light: %u\r\n"), env_l);
-				printf_P(PSTR("Hi there\r\n"));
-			}
 
-			if (data_send_pending) {
-				sock_status = socket(SENSOR_DATA_SOCKET, Sn_MR_TCP, NULL, NULL);
-
-				if (connect(SENSOR_DATA_SOCKET, server_ip, server_port)) {
-					PORTC &= ~(1 << PC6);
-
-					uint8_t msg[] = "hi there\0";
-
-					int32_t send_len = send(SENSOR_DATA_SOCKET, msg, strlen(msg));
-			  } else {
-					PORTC |= (1 << PC6);
-				}
-
-				data_send_pending = false;
+				//strcpy(payload, "hitherehitherehitherehitherehitherehitherehitherehithere");
+				sprintf(payload, "{%.2f,%.2f,%.2f,%u}", env_t, env_p, env_h, env_l);
+				send_data(payload, SERVER_IP, SERVER_PORT);
 			}
 		}
 	}
@@ -386,16 +353,16 @@ void hardware_init(void)
 	stdin = &usb_stream;
 
 	// wait until USB host sets configuration
-	while (!usb_configured())
-	_delay_ms(1000);
+	//while (!usb_configured())
+	//_delay_ms(1000);
 
 	// wait until host opens terminal
-	while (!(usb_serial_get_control() & USB_SERIAL_DTR))
+	//while (!(usb_serial_get_control() & USB_SERIAL_DTR))
 
 	// discard anything that was received prior.  Sometimes the
 	// operating system or other software will send a modem
 	// "AT command", which can still be buffered.
-	usb_serial_flush_input();
+	//usb_serial_flush_input();
 
 	// initialise analog to digital converter
 	adc_init();
@@ -415,4 +382,33 @@ void hardware_init(void)
 	bme280_read_temperature();
 	bme280_read_pressure();
 	bme280_read_humidity();
+}
+
+void send_data(uint8_t* msg, uint8_t* dest_ip, uint16_t dest_port) {
+	// status variables for network functions
+	int8_t sck_status;
+	int8_t con_status;
+	int32_t send_status;
+	int8_t close_status;
+
+	// create a TCP socket
+	if ((sck_status = socket(SENSOR_DATA_SOCKET, Sn_MR_TCP, NULL, NULL)) == SENSOR_DATA_SOCKET) {
+		// connect to the server
+		if ((con_status = connect(SENSOR_DATA_SOCKET, dest_ip, dest_port)) == SOCK_OK) {
+			if ((send_status = send(SENSOR_DATA_SOCKET, msg, strlen(msg))) != strlen(msg)) {
+				printf_P(PSTR("[error] unable to send: %" PRIi32 "\r\n"), send_status);
+			}
+		} else {
+			printf_P(PSTR("[error] connection not available: %i\r\n"), con_status);
+		}
+
+		// close the socket
+		if ((close_status = close(SENSOR_DATA_SOCKET)) == SOCK_OK) {
+			// do nothing
+		} else {
+			printf_P(PSTR("[error] unable to close socket: %i\r\n"), close_status);
+		}
+	} else {
+		printf_P(PSTR("[error] unable to create socket: %" PRIi8 "\r\n"), sck_status);
+	}
 }
