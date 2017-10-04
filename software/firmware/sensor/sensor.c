@@ -1,6 +1,7 @@
 /** \file
  *
- *  Temperature/pressure/humidity readout over USB virtual serial port.
+ *  Temperature/pressure/humidity readout over ethernet with USB virtual serial
+ *  port debugging.
  *
  *
  *  Sean Leavey
@@ -26,6 +27,9 @@
 #include "spi.h"
 #include "i2c.h"
 #include "bme280.h"
+
+// USB stream
+FILE usb_stream = FDEV_SETUP_STREAM(usb_serial_putchar, usb_serial_getchar, _FDEV_SETUP_RW);
 
 // sensor server settings
 const uint8_t server_ip[] = {192, 168, 0, 40};
@@ -63,13 +67,10 @@ wiz_NetInfo net_info = { .mac 	= {0x00, 0x08, 0xdc, 0xab, 0xcd, 0xef},
 												 .dhcp = NETINFO_DHCP };
 
 void wizchip_select(void) {
-	//usb_write_line("[S]");
 	PORTB &= ~(1 << PORTB6);
 }
 
 void wizchip_deselect(void) {
-	//usb_write_line("");
-	//usb_write_line("[D]");
 	PORTB |= (1 << PORTB6);
 }
 
@@ -236,10 +237,10 @@ int main(void)
 
 		switch (current_dhcp_state) {
 			case DHCP_IP_ASSIGN:
-			  usb_write_line("[info] IP assigned");
+			  printf_P(PSTR("[info] IP assigned\r\n"));
 				break;
 			case DHCP_IP_CHANGED:
-				usb_write_line("[info] IP changed");
+				printf_P(PSTR("[info] IP changed\r\n"));
 				break;
 			case DHCP_IP_LEASED:
 				// DHCP negotiation successful
@@ -254,7 +255,7 @@ int main(void)
 				// signal DHCP not ready
 			  dhcp_ready = false;
 
-				usb_write_line("[warning] DHCP failed");
+				printf_P(PSTR("[warning] DHCP failed\r\n"));
 
 				break;
 			default:
@@ -275,14 +276,14 @@ int main(void)
 					getIPfromDHCP(ip);
 				}
 
-				usb_write_line("[info] IP leased: %u.%u.%u.%u", ip[0], ip[1], ip[2], ip[3]);
+				printf_P(PSTR("[info] IP leased: %u.%u.%u.%u\r\n"), ip[0], ip[1], ip[2], ip[3]);
 			}
 		}
 
 		if (phy_link_check_pending) {
 			// check physical link
 			if (wizphy_getphylink() == PHY_LINK_OFF) {
-				usb_write_line("[warning] physical link offline");
+				printf_P(PSTR("[warning] physical link offline\r\n"));
 
 				// signal physical link not ready
 				phy_link_ready = false;
@@ -305,8 +306,8 @@ int main(void)
 				// reset
 				dust_measurement_ready = false;
 
-				usb_write_line("Dust 1: %u", dust_1_copy);
-				usb_write_line("Dust 2: %u", dust_2_copy);
+				printf_P(PSTR("Dust 1: %u\r\n"), dust_1_copy);
+				printf_P(PSTR("Dust 2: %u\r\n"), dust_2_copy);
 			}
 
 			if (env_measurement_pending) {
@@ -320,10 +321,11 @@ int main(void)
 				env_measurement_pending = false;
 
 				// float support below needs linker flags: -Wl,-u,vfprintf -lprintf_flt
-				usb_write_line("Temperature: %.2f", env_t);
-				usb_write_line("Pressure: %.2f", env_p);
-				usb_write_line("Humidity: %.2f", env_h);
-				usb_write_line("Light: %u", env_l);
+				printf_P(PSTR("Temperature: %.2f\r\n"), env_t);
+				printf_P(PSTR("Pressure: %.2f\r\n"), env_p);
+				printf_P(PSTR("Humidity: %.2f\r\n"), env_h);
+				printf_P(PSTR("Light: %u\r\n"), env_l);
+				printf_P(PSTR("Hi there\r\n"));
 			}
 
 			if (data_send_pending) {
@@ -372,6 +374,10 @@ void hardware_init(void)
 	// USB hardware initialisation
 	usb_init();
 
+	// redirect stdin and stdout to USB virtual serial
+	stdout = &usb_stream;
+	stdin = &usb_stream;
+
 	// wait until USB host sets configuration
 	while (!usb_configured())
 	_delay_ms(1000);
@@ -402,34 +408,4 @@ void hardware_init(void)
 	bme280_read_temperature();
 	bme280_read_pressure();
 	bme280_read_humidity();
-}
-
-void usb_serial_putstr(char* str)
-{
-	for (int i = 0; i < strlen(str); i++) {
-  	usb_serial_putchar(str[i]);
-	}
-}
-
-void usb_write_line(const char *str, ...) {
-	// USB message buffer
-	static char usb_buf[1024];
-
-	// list to store variable arguments
-	va_list args;
-
-	// start of variable arguments, with format the last required argument
-	va_start(args, str);
-
-	// variable argument print, (overflow safe)
-	vsnprintf(usb_buf, sizeof(usb_buf), str, args);
-
-	// end of variable arguments
-	va_end(args);
-
-	// append newline characters
-	strcat(usb_buf, "\r\n");
-
-	// send USB string
-	usb_serial_putstr(usb_buf);
 }

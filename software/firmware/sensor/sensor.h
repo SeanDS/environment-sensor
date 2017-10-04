@@ -20,7 +20,4 @@ void pwm_timer_enable(void);
 
 void hardware_init(void);
 
-void usb_serial_putstr(char*);
-void usb_write_line(const char*, ...);
-
 #endif /* _SENSOR_H_ */
