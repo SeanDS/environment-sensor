@@ -40,6 +40,7 @@ uint8_t pwm_timer_ovf_count = 0;
 uint16_t dust_timer_ovf_count = 0;
 uint8_t env_timer_ovf_count = 0;
 uint8_t dhcp_timer_ovf_count = 0;
+uint8_t data_timer_ovf_count = 0;
 
 // measurement flags controlled by interrupts
 bool env_measurement_pending = false;
@@ -112,6 +113,7 @@ ISR(TIMER3_OVF_vect) {
 	dust_timer_ovf_count++;
 	env_timer_ovf_count++;
 	dhcp_timer_ovf_count++;
+	data_timer_ovf_count++;
 
 	// measure dust triggers: add 1 if the dust sensor output is pulled low
 	// (indicating dust), else add 0
@@ -130,7 +132,7 @@ ISR(TIMER3_OVF_vect) {
 		p1 = 0;
 		p2 = 0;
 
-		// reset timer
+		// reset counter
 		dust_timer_ovf_count = 0;
 	}
 
@@ -138,7 +140,7 @@ ISR(TIMER3_OVF_vect) {
 	if (env_timer_ovf_count >= 244) {
 		env_measurement_pending = true;
 
-		// reset timer
+		// reset counter
 		env_timer_ovf_count = 0;
 	}
 
@@ -147,14 +149,18 @@ ISR(TIMER3_OVF_vect) {
 		// call DHCP second handler
 		DHCP_time_handler();
 
-		// reset DHCP overflow counter
+		// reset counter
 		dhcp_timer_ovf_count = 0;
 
 		// set physical link check flag
 		phy_link_check_pending = true;
+	}
 
-		// FIXME: move this out to its own counter
+	if (data_timer_ovf_count >= 244) {
 		data_send_pending = true;
+
+		// reset counter
+		data_timer_ovf_count = 0;
 	}
 }
 
@@ -202,6 +208,7 @@ int main(void)
 	// IP address
 	uint8_t ip[] = {0, 0, 0, 0};
 
+	// sensor measurement variables
 	uint16_t dust_1_copy;
 	uint16_t dust_2_copy;
 	float env_t;
