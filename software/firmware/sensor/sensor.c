@@ -382,7 +382,7 @@ void send_data(const uint8_t* dest_ip, const uint16_t dest_port, char* msg) {
 	int8_t close_status;
 
 	// create a TCP socket
-	if ((sck_status = socket(SENSOR_DATA_SOCKET, Sn_MR_TCP, NULL, NULL)) == SENSOR_DATA_SOCKET) {
+	if ((sck_status = socket(SENSOR_DATA_SOCKET, Sn_MR_TCP, 0, 0)) == SENSOR_DATA_SOCKET) {
 		// connect to the server
 		if ((con_status = connect(SENSOR_DATA_SOCKET, (uint8_t*) dest_ip, (uint16_t) dest_port)) == SOCK_OK) {
 			if ((send_status = send(SENSOR_DATA_SOCKET, (uint8_t*) msg, strlen(msg))) != strlen(msg)) {
