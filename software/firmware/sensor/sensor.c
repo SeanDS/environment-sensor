@@ -27,10 +27,14 @@
 #include "i2c.h"
 #include "bme280.h"
 
+// redefine DHCP host name (first defined in dhcp.h)
+#define DCHP_HOST_NAME "ENVSENSOR"
+
 // USB stream
 FILE usb_stream = FDEV_SETUP_STREAM(usb_serial_putchar, usb_serial_getchar, _FDEV_SETUP_RW);
 
-uint8_t payload[DATA_BUF_SIZE];
+// DHCP data buffer
+uint8_t dhcp_buf[DHCP_BUF_SIZE];
 
 // timer overflow counters
 uint8_t pwm_timer_ovf_count = 0;
@@ -52,13 +56,6 @@ uint32_t p2 = 0;
 // dust measurements
 volatile uint16_t dust_1 = 0;
 volatile uint16_t dust_2 = 0;
-
-wiz_NetInfo net_info = { .mac 	= {0x00, 0x08, 0xdc, 0xab, 0xcd, 0xef},
-												 .ip 	= {192, 168, 0, 101},
-												 .sn 	= {255, 255, 255, 0},
-												 .gw 	= {192, 168, 0, 1},
-												 .dns = {0, 0, 0, 0},
-												 .dhcp = NETINFO_DHCP };
 
 void wizchip_select(void) {
 	PORTB &= ~(1 << PORTB6);
@@ -175,17 +172,11 @@ ISR(TIMER0_OVF_vect) {
  */
 int main(void)
 {
-	// DHCP data buffer
-	uint8_t dhcp_buf[DATA_BUF_SIZE];
-
 	// current and previous DHCP states
-	int8_t previous_dhcp_state;
-	int8_t current_dhcp_state;
+	uint8_t previous_dhcp_state = DHCP_STOPPED;
+	uint8_t current_dhcp_state = DHCP_STOPPED;
 
-	// socket buffer sizes, in kB
-	uint8_t wiznet_buf_size[] = {2, 2, 2, 2, 2, 2, 2, 2};
-
-	// IP address
+	// for IP address, once obtained via DHCP
 	uint8_t ip[] = {0, 0, 0, 0};
 
 	// sensor measurement variables
@@ -203,9 +194,8 @@ int main(void)
 	hardware_init();
 	pwm_timer_enable();
 
-	wizchip_init(wiznet_buf_size, wiznet_buf_size);
-	wizchip_setnetinfo(&net_info);
-	setSHAR(net_info.mac);
+	wizchip_init((uint8_t*) WIZNET_BUF_SIZE, (uint8_t*) WIZNET_BUF_SIZE);
+	setSHAR((uint8_t*) mac_addr);
 
 	reg_wizchip_cs_cbfunc(wizchip_select, wizchip_deselect);
 	reg_wizchip_spi_cbfunc(spi_receive, spi_send);
@@ -295,6 +285,8 @@ int main(void)
 
 				printf_P(PSTR("Dust 1: %u\r\n"), dust_1_copy);
 				printf_P(PSTR("Dust 2: %u\r\n"), dust_2_copy);
+
+				send_dust_http_post(dust_1_copy, dust_2_copy);
 			}
 
 			if (env_measurement_pending) {
@@ -313,9 +305,7 @@ int main(void)
 				printf_P(PSTR("Humidity: %.2f\r\n"), env_h);
 				printf_P(PSTR("Light: %u\r\n"), env_l);
 
-				//strcpy(payload, "hitherehitherehitherehitherehitherehitherehitherehithere");
-				sprintf(payload, "{%.2f,%.2f,%.2f,%u}", env_t, env_p, env_h, env_l);
-				send_data(payload, SERVER_IP, SERVER_PORT);
+				send_env_http_post(env_t, env_p, env_h, env_l);
 			}
 		}
 	}
@@ -384,7 +374,7 @@ void hardware_init(void)
 	bme280_read_humidity();
 }
 
-void send_data(uint8_t* msg, uint8_t* dest_ip, uint16_t dest_port) {
+void send_data(const uint8_t* dest_ip, const uint16_t dest_port, char* msg) {
 	// status variables for network functions
 	int8_t sck_status;
 	int8_t con_status;
@@ -394,8 +384,8 @@ void send_data(uint8_t* msg, uint8_t* dest_ip, uint16_t dest_port) {
 	// create a TCP socket
 	if ((sck_status = socket(SENSOR_DATA_SOCKET, Sn_MR_TCP, NULL, NULL)) == SENSOR_DATA_SOCKET) {
 		// connect to the server
-		if ((con_status = connect(SENSOR_DATA_SOCKET, dest_ip, dest_port)) == SOCK_OK) {
-			if ((send_status = send(SENSOR_DATA_SOCKET, msg, strlen(msg))) != strlen(msg)) {
+		if ((con_status = connect(SENSOR_DATA_SOCKET, (uint8_t*) dest_ip, (uint16_t) dest_port)) == SOCK_OK) {
+			if ((send_status = send(SENSOR_DATA_SOCKET, (uint8_t*) msg, strlen(msg))) != strlen(msg)) {
 				printf_P(PSTR("[error] unable to send: %" PRIi32 "\r\n"), send_status);
 			}
 		} else {
@@ -411,4 +401,59 @@ void send_data(uint8_t* msg, uint8_t* dest_ip, uint16_t dest_port) {
 	} else {
 		printf_P(PSTR("[error] unable to create socket: %" PRIi8 "\r\n"), sck_status);
 	}
+}
+
+void send_http_post(const uint8_t* dest_ip, const uint16_t dest_port, const char* path, char* msg) {
+	// buffer for HTTP request
+	char http_msg[HTTP_BUF_SIZE];
+
+	// construct HTTP request (must use HTTP 1.0 because we cannot define the
+	// HTTP/1.1 required host header)
+	sprintf_P(http_msg, PSTR(
+		"POST %s HTTP/1.0\r\n"
+		"Content-Type: text/html; charset=utf-8\r\n"
+		"Connection: close\r\n"
+		"\r\n"
+		"%s"),
+		path, msg);
+
+	return send_data(dest_ip, dest_port, http_msg);
+}
+
+void send_dust_http_post(uint16_t dust_1, uint16_t dust_2) {
+	// sensor payload buffer
+	char payload[PAYLOAD_BUF_SIZE];
+
+	sprintf_P(payload, PSTR("{"
+		"\"version\":" SOFTWARE_VERSION ","
+		"\"mac\":\"%02x:%02x:%02x:%02x:%02x:%02x\","
+		"\"dust1\":%u,"
+		"\"dust2\":%u"
+		"}"),
+		mac_addr[0], mac_addr[1], mac_addr[2],
+		mac_addr[3], mac_addr[4], mac_addr[5],
+		dust_1, dust_2
+	);
+
+	send_http_post(SERVER_IP, SERVER_PORT, DUST_PATH, payload);
+}
+
+void send_env_http_post(float env_t, double env_p, float env_h, uint16_t env_l) {
+	// sensor payload buffer
+	char payload[PAYLOAD_BUF_SIZE];
+
+	sprintf_P(payload, PSTR("{"
+		"\"version\":" SOFTWARE_VERSION ","
+		"\"mac\":\"%02x:%02x:%02x:%02x:%02x:%02x\","
+		"\"temperature\":%.2f,"
+		"\"pressure\":%.2f,"
+		"\"humidity\":%.2f,"
+		"\"light\":%u"
+		"}"),
+		mac_addr[0], mac_addr[1], mac_addr[2],
+		mac_addr[3], mac_addr[4], mac_addr[5],
+		env_t, env_p, env_h, env_l
+	);
+
+	send_http_post(SERVER_IP, SERVER_PORT, ENV_PATH, payload);
 }
