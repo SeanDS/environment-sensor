@@ -391,13 +391,6 @@ void send_data(const uint8_t* dest_ip, const uint16_t dest_port, char* msg) {
 		} else {
 			printf_P(PSTR("[error] connection not available: %i\r\n"), con_status);
 		}
-
-		// close the socket
-		if ((close_status = close(SENSOR_DATA_SOCKET)) == SOCK_OK) {
-			// do nothing
-		} else {
-			printf_P(PSTR("[error] unable to close socket: %i\r\n"), close_status);
-		}
 	} else {
 		printf_P(PSTR("[error] unable to create socket: %" PRIi8 "\r\n"), sck_status);
 	}
@@ -411,7 +404,7 @@ void send_http_post(const uint8_t* dest_ip, const uint16_t dest_port, const char
 	// HTTP/1.1 required host header)
 	sprintf_P(http_msg, PSTR(
 		"POST %s HTTP/1.0\r\n"
-		"Content-Type: text/html; charset=utf-8\r\n"
+		"Content-Type: application/json; charset=utf-8\r\n"
 		"Connection: close\r\n"
 		"\r\n"
 		"%s"),

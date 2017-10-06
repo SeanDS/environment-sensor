@@ -11,8 +11,8 @@ const uint8_t SERVER_IP[] = {192, 168, 0, 40};
 const uint16_t SERVER_PORT = 50000;
 
 // server paths for posting data
-const char DUST_PATH[] = "/monitor/dust/post";
-const char ENV_PATH[] = "/monitor/env/post";
+const char DUST_PATH[] = "/monitor/dust";
+const char ENV_PATH[] = "/monitor/env";
 
 // string buffer sizes
 #define DHCP_BUF_SIZE 1024
