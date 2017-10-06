@@ -406,9 +406,11 @@ void send_http_post(const uint8_t* dest_ip, const uint16_t dest_port, const char
 		"POST %s HTTP/1.0\r\n"
 		"Content-Type: application/json; charset=utf-8\r\n"
 		"Connection: close\r\n"
+		"Content-Length: %u\r\n"
 		"\r\n"
-		"%s"),
-		path, msg);
+		"%s"
+		"\r\n"),
+		path, strlen(msg), msg);
 
 	return send_data(dest_ip, dest_port, http_msg);
 }
