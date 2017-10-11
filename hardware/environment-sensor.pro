@@ -1,4 +1,4 @@
-update=Thu 29 Jun 2017 10:51:27 BST
+update=Mon 09 Oct 2017 11:50:46 BST
 version=1
 last_client=kicad
 [pcbnew]
@@ -25,6 +25,16 @@ version=1
 NetIExt=net
 [general]
 version=1
+[schematic_editor]
+version=1
+PageLayoutDescrFile=
+PlotDirectoryName=
+SubpartIdSeparator=0
+SubpartFirstId=65
+NetFmtName=
+SpiceForceRefPrefix=0
+SpiceUseNetNumbers=0
+LabSize=60
 [eeschema]
 version=1
 LibDir=lib
@@ -61,13 +71,4 @@ LibName29=valves
 LibName30=lib/wiznet
 LibName31=lib/Sensors_Bosch
 LibName32=lib/cetus
-[schematic_editor]
-version=1
-PageLayoutDescrFile=
-PlotDirectoryName=
-SubpartIdSeparator=0
-SubpartFirstId=65
-NetFmtName=
-SpiceForceRefPrefix=0
-SpiceUseNetNumbers=0
-LabSize=60
+LibName33=lib/LDRs_NSL

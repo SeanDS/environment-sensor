@@ -1,7 +1,7 @@
 (fp_lib_table
-  (lib (name STMicroelectronics_Temp_Humid)(type KiCad)(uri "$(KIPRJMOD)/lib/STMicroelectronics_Temp_Humid.pretty")(options "")(descr "STMicroelectronics temperature and humidity sensors"))
-  (lib (name Bosch_Environment_Sensor)(type KiCad)(uri "$(KIPRJMOD)/lib/Bosch_Environment_Sensor.pretty")(options "")(descr ""))
-  (lib (name Luna_Optoelectronics_LDR)(type KiCad)(uri "$(KIPRJMOD)/lib/Luna_Optoelectronics_LDR.pretty")(options "")(descr ""))
+  (lib (name Sensors_LGA)(type KiCad)(uri "$(KIPRJMOD)/lib/Sensors_LGA.pretty")(options "")(descr ""))
+  (lib (name LDRs_NSL)(type KiCad)(uri "$(KIPRJMOD)/lib/LDRs_NSL.pretty")(options "")(descr ""))
   (lib (name Board_Outlines)(type KiCad)(uri "$(KIPRJMOD)/lib/Board_Outlines.pretty")(options "")(descr ""))
-  (lib (name Cetus_RJ45)(type KiCad)(uri "$(KIPRJMOD)/lib/Cetus_RJ45.pretty")(options "")(descr ""))
+  (lib (name Sockets_RJ45)(type KiCad)(uri "$(KIPRJMOD)/lib/Sockets_RJ45.pretty")(options "")(descr ""))
+  (lib (name Buttons_Switches_SMD_FSM_JSM)(type KiCad)(uri "$(KIPRJMOD)/lib/Buttons_Switches_SMD_FSM_JSM.pretty")(options "")(descr ""))
 )
