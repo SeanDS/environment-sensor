@@ -156,10 +156,10 @@ ISR(TIMER0_OVF_vect) {
 
 	if (pwm_timer_ovf_count >= 125) {
 		// switch on
-		PORTB |= (1 << PORTB4);
+		PORTB |= (1 << PORTB5);
 	} else {
 		// switch off
-		PORTB &= ~(1 << PORTB4);
+		PORTB &= ~(1 << PORTB5);
 	}
 
 	if (pwm_timer_ovf_count >= 128) {
@@ -343,7 +343,7 @@ void hardware_init(void)
 	DDRD &= ~(1 << PORTD6) | ~(1 << PORTD7);
 
 	// set dust sensor threshold as output
-	DDRB |= (1 << PORTB4);
+	DDRB |= (1 << PORTB5);
 
 	// USB hardware initialisation
 	usb_init();
