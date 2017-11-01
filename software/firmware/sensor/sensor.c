@@ -194,6 +194,9 @@ int main(void)
 	hardware_init();
 	pwm_timer_enable();
 
+	// enable W5500
+	PORTF |= (1 << PORTF0);
+
 	wizchip_init((uint8_t*) WIZNET_BUF_SIZE, (uint8_t*) WIZNET_BUF_SIZE);
 	setSHAR((uint8_t*) mac_addr);
 
@@ -325,6 +328,12 @@ void hardware_init(void)
 
 	// disable W5500 chip select
   PORTB |= (1 << PORTB6);
+
+	// set W5500 reset line as output
+	DDRF |= (1 << PORTF0);
+
+	// disable W5500
+	PORTF &= ~(1 << PORTF0);
 
 	// set LED pins as outputs
 	DDRC |= (1 << PC6) | (1 << PC7);
