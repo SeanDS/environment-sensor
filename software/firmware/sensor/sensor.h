@@ -1,7 +1,7 @@
 #ifndef _SENSOR_H_
 #define _SENSOR_H_
 
-#define SOFTWARE_VERSION "0.9"
+#define SOFTWARE_VERSION "0.9.1"
 
 // this unit's physical address
 const uint8_t mac_addr[] = {0x00, 0x08, 0xdc, 0xab, 0xcd, 0xef};
@@ -26,6 +26,8 @@ const uint8_t WIZNET_BUF_SIZE[] = {1, 8, 1, 1, 1, 1, 1, 1};
 #define DHCP_SOCKET 0
 #define SENSOR_DATA_SOCKET 1
 
+void wizchip_enable(void);
+void wizchip_disable(void);
 void wizchip_select(void);
 void wizchip_deselect(void);
 
@@ -35,8 +37,11 @@ void pwm_timer_enable(void);
 void hardware_init(void);
 
 void send_data(const uint8_t*, const uint16_t, char*);
-void send_http_post(const uint8_t*, const uint16_t, const char*, char*);
+void send_json_http_post(const uint8_t*, const uint16_t, const char*, char*);
 void send_dust_http_post(uint16_t, uint16_t);
 void send_env_http_post(float, double, float, uint16_t);
+
+void dust_measurement(void);
+void env_measurement(void);
 
 #endif /* _SENSOR_H_ */

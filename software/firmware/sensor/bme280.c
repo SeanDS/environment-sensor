@@ -22,7 +22,6 @@ uint16_t read8(uint8_t reg)
   }
 }
 
-
 uint16_t read16(uint8_t reg)
 {
   uint16_t val;
@@ -143,6 +142,15 @@ void bme280_init()
       i2c_stop();
     }
   }
+
+  // take some throw-away measurements with the BME280 (the first few are
+	// usually wrong)
+	bme280_read_temperature();
+	bme280_read_pressure();
+	bme280_read_humidity();
+	bme280_read_temperature();
+	bme280_read_pressure();
+	bme280_read_humidity();
 }
 
 float bme280_read_temperature(void)

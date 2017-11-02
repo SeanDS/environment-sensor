@@ -51,19 +51,27 @@ bool dust_measurement_ready = false;
 bool phy_link_check_pending = false;
 
 // dust sensor low pulse occupancies
-uint32_t p1 = 0;
-uint32_t p2 = 0;
+uint32_t pulse_1 = 0;
+uint32_t pulse_2 = 0;
 
 // dust measurements
 volatile uint16_t dust_1 = 0;
 volatile uint16_t dust_2 = 0;
 
+void wizchip_enable(void) {
+	PORTF |= (1 << PF0);
+}
+
+void wizchip_disable(void) {
+	PORTF &= ~(1 << PF0);
+}
+
 void wizchip_select(void) {
-	PORTB &= ~(1 << PORTB6);
+	PORTB &= ~(1 << PB6);
 }
 
 void wizchip_deselect(void) {
-	PORTB |= (1 << PORTB6);
+	PORTB |= (1 << PB6);
 }
 
 void general_timer_enable(void) {
@@ -107,20 +115,20 @@ ISR(TIMER3_OVF_vect) {
 
 	// measure dust triggers: add 1 if the dust sensor output is pulled low
 	// (indicating dust), else add 0
-	p1 += (PIND & (1 << PIND6)) == 0 ? 1 : 0;
-	p2 += (PIND & (1 << PIND7)) == 0 ? 1 : 0;
+	pulse_1 += (PIND & (1 << PD6)) == 0 ? 1 : 0;
+	pulse_2 += (PIND & (1 << PD7)) == 0 ? 1 : 0;
 
 	// approx 30 seconds
 	if (dust_timer_ovf_count > 7324) {
 		// record pulse counts
-		dust_1 = p1;
-		dust_2 = p2;
+		dust_1 = pulse_1;
+		dust_2 = pulse_2;
 
 		dust_measurement_ready = true;
 
 		// reset pulse counters
-		p1 = 0;
-		p2 = 0;
+		pulse_1 = 0;
+		pulse_2 = 0;
 
 		// reset counter
 		dust_timer_ovf_count = 0;
@@ -156,10 +164,10 @@ ISR(TIMER0_OVF_vect) {
 
 	if (pwm_timer_ovf_count >= 125) {
 		// switch on
-		PORTB |= (1 << PORTB5);
+		PORTB |= (1 << PB5);
 	} else {
 		// switch off
-		PORTB &= ~(1 << PORTB5);
+		PORTB &= ~(1 << PB5);
 	}
 
 	if (pwm_timer_ovf_count >= 128) {
@@ -180,14 +188,6 @@ int main(void)
 	// for IP address, once obtained via DHCP
 	uint8_t ip[] = {0, 0, 0, 0};
 
-	// sensor measurement variables
-	uint16_t dust_1_copy;
-	uint16_t dust_2_copy;
-	float env_t;
-	double env_p;
-	float env_h;
-	uint16_t env_l;
-
 	// network status flags
 	bool dhcp_ready = false;
 	bool phy_link_ready = false;
@@ -195,9 +195,7 @@ int main(void)
 	hardware_init();
 	pwm_timer_enable();
 
-	// enable W5500
-	PORTF |= (1 << PORTF0);
-
+	wizchip_enable();
 	wizchip_init((uint8_t*) WIZNET_BUF_SIZE, (uint8_t*) WIZNET_BUF_SIZE);
 	setSHAR((uint8_t*) mac_addr);
 
@@ -276,41 +274,10 @@ int main(void)
 			phy_link_check_pending = false;
 		}
 
-		if (dhcp_ready && phy_link_ready) {
-			if (dust_measurement_ready) {
-				// avoid interrupts while reading sensor values
-				ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
-					dust_1_copy = dust_1;
-					dust_2_copy = dust_2;
-				}
-
-				// reset
-				dust_measurement_ready = false;
-
-				printf_P(PSTR("Dust 1: %u\r\n"), dust_1_copy);
-				printf_P(PSTR("Dust 2: %u\r\n"), dust_2_copy);
-
-				send_dust_http_post(dust_1_copy, dust_2_copy);
-			}
-
-			if (env_measurement_pending) {
-				// take measurements
-				env_t = bme280_read_temperature();
-				env_p = bme280_read_pressure();
-				env_h = bme280_read_humidity();
-				env_l = analog_read(ADC_8);
-
-				// reset
-				env_measurement_pending = false;
-
-				// float support below needs linker flags: -Wl,-u,vfprintf -lprintf_flt
-				printf_P(PSTR("Temperature: %.2f\r\n"), env_t);
-				printf_P(PSTR("Pressure: %.2f\r\n"), env_p);
-				printf_P(PSTR("Humidity: %.2f\r\n"), env_h);
-				printf_P(PSTR("Light: %u\r\n"), env_l);
-
-				send_env_http_post(env_t, env_p, env_h, env_l);
-			}
+		// when unit is connected and assigned an IP
+		if (phy_link_ready && dhcp_ready) {
+			dust_measurement();
+			env_measurement();
 		}
 	}
 }
@@ -325,25 +292,27 @@ void hardware_init(void)
 	clock_prescale_set(clock_div_1);
 
 	// set W5500 chip select as output
-	DDRB |= (1 << PORTB6);
-
-	// disable W5500 chip select
-  PORTB |= (1 << PORTB6);
+	DDRB |= (1 << PB6);
 
 	// set W5500 reset line as output
-	DDRF |= (1 << PORTF0);
-
-	// disable W5500
-	PORTF &= ~(1 << PORTF0);
+	DDRF |= (1 << PF0);
 
 	// set LED pins as outputs
-	DDRC |= (1 << PC6) | (1 << PC7);
+	DDRC |= (1 << PC6);
+	DDRC |= (1 << PC7);
 
 	// set dust sensor P1 and P2 inputs
-	DDRD &= ~(1 << PORTD6) | ~(1 << PORTD7);
+	DDRD &= ~(1 << PD6);
+	DDRD &= ~(1 << PD7);
 
 	// set dust sensor threshold as output
-	DDRB |= (1 << PORTB5);
+	DDRB |= (1 << PB5);
+
+	// disable W5500 chip select
+  wizchip_deselect();
+
+	// disable W5500
+	wizchip_disable();
 
 	// USB hardware initialisation
 	usb_init();
@@ -370,18 +339,9 @@ void hardware_init(void)
 	// initialise SPI
 	spi_init();
 
-	// initialise I2C bus and BME280 sensors
+	// initialise I2C bus and BME280 sensor
 	i2c_init();
 	bme280_init();
-
-	// take some throw-away measurements with the BME280 (the first few are
-	// usually wrong)
-	bme280_read_temperature();
-	bme280_read_pressure();
-	bme280_read_humidity();
-	bme280_read_temperature();
-	bme280_read_pressure();
-	bme280_read_humidity();
 }
 
 void send_data(const uint8_t* dest_ip, const uint16_t dest_port, char* msg) {
@@ -406,7 +366,7 @@ void send_data(const uint8_t* dest_ip, const uint16_t dest_port, char* msg) {
 	}
 }
 
-void send_http_post(const uint8_t* dest_ip, const uint16_t dest_port, const char* path, char* msg) {
+void send_json_http_post(const uint8_t* dest_ip, const uint16_t dest_port, const char* path, char* msg) {
 	// buffer for HTTP request
 	char http_msg[HTTP_BUF_SIZE];
 
@@ -440,7 +400,7 @@ void send_dust_http_post(uint16_t dust_1, uint16_t dust_2) {
 		dust_1, dust_2
 	);
 
-	send_http_post(SERVER_IP, SERVER_PORT, DUST_PATH, payload);
+	send_json_http_post(SERVER_IP, SERVER_PORT, DUST_PATH, payload);
 }
 
 void send_env_http_post(float env_t, double env_p, float env_h, uint16_t env_l) {
@@ -460,5 +420,48 @@ void send_env_http_post(float env_t, double env_p, float env_h, uint16_t env_l) 
 		env_t, env_p, env_h, env_l
 	);
 
-	send_http_post(SERVER_IP, SERVER_PORT, ENV_PATH, payload);
+	send_json_http_post(SERVER_IP, SERVER_PORT, ENV_PATH, payload);
+}
+
+void dust_measurement(void) {
+	if (dust_measurement_ready) {
+		// measurement variables
+		uint16_t dust_1_copy;
+		uint16_t dust_2_copy;
+
+		// avoid interrupts while reading sensor values
+		ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
+			dust_1_copy = dust_1;
+			dust_2_copy = dust_2;
+		}
+
+		// reset
+		dust_measurement_ready = false;
+
+		printf_P(PSTR("Dust 1: %u\r\n"), dust_1_copy);
+		printf_P(PSTR("Dust 2: %u\r\n"), dust_2_copy);
+
+		send_dust_http_post(dust_1_copy, dust_2_copy);
+	}
+}
+
+void env_measurement(void) {
+	if (env_measurement_pending) {
+		// take measurements
+		float env_t = bme280_read_temperature();
+		double env_p = bme280_read_pressure();
+		float env_h = bme280_read_humidity();
+		uint16_t env_l = analog_read(ADC_8);
+
+		// reset
+		env_measurement_pending = false;
+
+		// float support below needs linker flags: -Wl,-u,vfprintf -lprintf_flt
+		printf_P(PSTR("Temperature: %.2f\r\n"), env_t);
+		printf_P(PSTR("Pressure: %.2f\r\n"), env_p);
+		printf_P(PSTR("Humidity: %.2f\r\n"), env_h);
+		printf_P(PSTR("Light: %u\r\n"), env_l);
+
+		send_env_http_post(env_t, env_p, env_h, env_l);
+	}
 }
