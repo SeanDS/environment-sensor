@@ -13,7 +13,6 @@
 #include <avr/interrupt.h>
 #include <avr/wdt.h>
 #include <avr/power.h>
-#include <string.h>
 #include <avr/pgmspace.h>
 #include <util/delay.h>
 #include <util/atomic.h>
@@ -124,6 +123,7 @@ ISR(TIMER3_OVF_vect) {
 		dust_1 = pulse_1;
 		dust_2 = pulse_2;
 
+		// set measurement flag
 		dust_measurement_ready = true;
 
 		// reset pulse counters
@@ -136,6 +136,7 @@ ISR(TIMER3_OVF_vect) {
 
 	// approx 1 second
 	if (env_timer_ovf_count >= 244) {
+		// set measurement flag
 		env_measurement_pending = true;
 
 		// reset counter
@@ -176,11 +177,10 @@ ISR(TIMER0_OVF_vect) {
 	}
 }
 
-/** Main program entry point.
- *
+/*
+ *  Main program entry point.
  */
-int main(void)
-{
+int main(void) {
 	// current and previous DHCP states
 	uint8_t previous_dhcp_state = DHCP_STOPPED;
 	uint8_t current_dhcp_state = DHCP_STOPPED;
@@ -192,75 +192,30 @@ int main(void)
 	bool dhcp_ready = false;
 	bool phy_link_ready = false;
 
+	// set up chip I/O
 	hardware_init();
 	pwm_timer_enable();
 
+	// set up network I/O
 	wizchip_enable();
 	wizchip_init((uint8_t*) WIZNET_BUF_SIZE, (uint8_t*) WIZNET_BUF_SIZE);
 	setSHAR((uint8_t*) mac_addr);
 
+	// register SPI callback functions
 	reg_wizchip_cs_cbfunc(wizchip_select, wizchip_deselect);
 	reg_wizchip_spi_cbfunc(spi_receive, spi_send);
 
+	// start DHCP
 	DHCP_init(DHCP_SOCKET, dhcp_buf);
 
+	// start DHCP and sensor timer
 	general_timer_enable();
 
-	for (;;)
-	{
-		// remember previous DHCP state
-		previous_dhcp_state = current_dhcp_state;
-
-		// run DHCP to acquire or maintain IP address
-		current_dhcp_state = DHCP_run();
-
-		switch (current_dhcp_state) {
-			case DHCP_IP_ASSIGN:
-			  printf_P(PSTR("[info] IP assigned\r\n"));
-				break;
-			case DHCP_IP_CHANGED:
-				printf_P(PSTR("[info] IP changed\r\n"));
-				break;
-			case DHCP_IP_LEASED:
-				// DHCP negotiation successful
-
-				// signal DHCP ready
-			  dhcp_ready = true;
-
-				break;
-			case DHCP_FAILED:
-				// DHCP negotiation failed
-
-				// signal DHCP not ready
-			  dhcp_ready = false;
-
-				printf_P(PSTR("[warning] DHCP failed\r\n"));
-
-				break;
-			default:
-				// DHCP negotiation in progress
-
-				// signal DHCP not ready
-			  dhcp_ready = false;
-
-				break;
-		}
-
-		if (current_dhcp_state != previous_dhcp_state) {
-			// state has changed
-
-			if (current_dhcp_state == DHCP_IP_LEASED) {
-				// avoid interrupts while reading IP
-				ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
-					getIPfromDHCP(ip);
-				}
-
-				printf_P(PSTR("[info] IP leased: %u.%u.%u.%u\r\n"), ip[0], ip[1], ip[2], ip[3]);
-			}
-		}
-
+	// main loop
+	for (;;) {
+		// physical link check
 		if (phy_link_check_pending) {
-			// check physical link
+			// check if link is offline
 			if (wizphy_getphylink() == PHY_LINK_OFF) {
 				printf_P(PSTR("[warning] physical link offline\r\n"));
 
@@ -271,19 +226,93 @@ int main(void)
 				phy_link_ready = true;
 			}
 
+			// reset flag
 			phy_link_check_pending = false;
+		}
+
+		if (!phy_link_ready) {
+			// skip this iteration
+			continue;
+		}
+
+		// remember previous DHCP state
+		previous_dhcp_state = current_dhcp_state;
+
+		// run DHCP to acquire or maintain IP address
+		current_dhcp_state = DHCP_run();
+
+		// handle DHCP state
+		switch (current_dhcp_state) {
+			// IP assigned
+			case DHCP_IP_ASSIGN:
+				break;
+			// IP changed
+			case DHCP_IP_CHANGED:
+				break;
+			// IP leased
+			case DHCP_IP_LEASED:
+				// DHCP negotiation successful
+				// signal DHCP ready
+			  dhcp_ready = true;
+				break;
+			// DHCP negotiation unsuccessful
+			case DHCP_FAILED:
+				// DHCP negotiation failed
+				// signal DHCP not ready
+			  dhcp_ready = false;
+
+				// reset physical link
+				wizchip_disable();
+				_delay_ms(5);
+				wizchip_enable();
+
+				break;
+			default:
+				// DHCP negotiation in progress
+				// signal DHCP not ready
+			  dhcp_ready = false;
+				break;
+		}
+
+		// check if state has changed
+		if (current_dhcp_state != previous_dhcp_state) {
+			switch (current_dhcp_state) {
+				// IP assigned
+				case DHCP_IP_ASSIGN:
+				  printf_P(PSTR("[info] IP assigned\r\n"));
+					break;
+				// IP changed
+				case DHCP_IP_CHANGED:
+					printf_P(PSTR("[info] IP changed\r\n"));
+					break;
+				// IP just leased
+			  case DHCP_IP_LEASED:
+					// avoid interrupts while reading IP
+					ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
+						getIPfromDHCP(ip);
+					}
+
+					printf_P(PSTR("[info] IP leased: %u.%u.%u.%u\r\n"),
+									 ip[0], ip[1], ip[2], ip[3]);
+
+					break;
+				// DHCP negotiation unsuccessful
+				case DHCP_FAILED:
+					printf_P(PSTR("[warning] DHCP failed\r\n"));
+					break;
+			}
 		}
 
 		// when unit is connected and assigned an IP
 		if (phy_link_ready && dhcp_ready) {
+			// make and send measurements
 			dust_measurement();
 			env_measurement();
 		}
 	}
 }
 
-void hardware_init(void)
-{
+void hardware_init(void) {
 	// disable watchdog if enabled by bootloader/fuses
 	MCUSR &= ~(1 << WDRF);
 	wdt_disable();
@@ -352,17 +381,27 @@ void send_data(const uint8_t* dest_ip, const uint16_t dest_port, char* msg) {
 	int8_t close_status;
 
 	// create a TCP socket
-	if ((sck_status = socket(SENSOR_DATA_SOCKET, Sn_MR_TCP, 0, 0)) == SENSOR_DATA_SOCKET) {
+	sck_status = socket(SENSOR_DATA_SOCKET, Sn_MR_TCP, 0, 0);
+
+	if (sck_status == SENSOR_DATA_SOCKET) {
 		// connect to the server
-		if ((con_status = connect(SENSOR_DATA_SOCKET, (uint8_t*) dest_ip, (uint16_t) dest_port)) == SOCK_OK) {
-			if ((send_status = send(SENSOR_DATA_SOCKET, (uint8_t*) msg, strlen(msg))) != strlen(msg)) {
+		con_status = connect(SENSOR_DATA_SOCKET, (uint8_t*) dest_ip, (uint16_t) dest_port);
+
+		if (con_status == SOCK_OK) {
+			// send data
+			send_status = send(SENSOR_DATA_SOCKET, (uint8_t*) msg, strlen(msg));
+
+			// send status should match length of message if successful
+			if (send_status != strlen(msg)) {
 				printf_P(PSTR("[error] unable to send: %" PRIi32 "\r\n"), send_status);
 			}
 		} else {
+			// connection issue
 			printf_P(PSTR("[error] connection not available: %i\r\n"), con_status);
 		}
 	} else {
-		printf_P(PSTR("[error] unable to create socket: %" PRIi8 "\r\n"), sck_status);
+		// socket issue
+		printf_P(PSTR("[error] unable to create socket: %i\r\n"), sck_status);
 	}
 }
 
@@ -371,7 +410,7 @@ void send_json_http_post(const uint8_t* dest_ip, const uint16_t dest_port, const
 	char http_msg[HTTP_BUF_SIZE];
 
 	// construct HTTP request (must use HTTP 1.0 because we cannot define the
-	// HTTP/1.1 required host header)
+	// required HTTP/1.1 host header)
 	sprintf_P(http_msg, PSTR(
 		"POST %s HTTP/1.0\r\n"
 		"Content-Type: application/json; charset=utf-8\r\n"
@@ -382,6 +421,7 @@ void send_json_http_post(const uint8_t* dest_ip, const uint16_t dest_port, const
 		"\r\n"),
 		path, strlen(msg), msg);
 
+	// send data
 	return send_data(dest_ip, dest_port, http_msg);
 }
 
@@ -400,6 +440,7 @@ void send_dust_http_post(uint16_t dust_1, uint16_t dust_2) {
 		dust_1, dust_2
 	);
 
+	// send data
 	send_json_http_post(SERVER_IP, SERVER_PORT, DUST_PATH, payload);
 }
 
@@ -420,6 +461,7 @@ void send_env_http_post(float env_t, double env_p, float env_h, uint16_t env_l) 
 		env_t, env_p, env_h, env_l
 	);
 
+	// send data
 	send_json_http_post(SERVER_IP, SERVER_PORT, ENV_PATH, payload);
 }
 
@@ -441,6 +483,7 @@ void dust_measurement(void) {
 		printf_P(PSTR("Dust 1: %u\r\n"), dust_1_copy);
 		printf_P(PSTR("Dust 2: %u\r\n"), dust_2_copy);
 
+		// send data
 		send_dust_http_post(dust_1_copy, dust_2_copy);
 	}
 }
@@ -462,6 +505,7 @@ void env_measurement(void) {
 		printf_P(PSTR("Humidity: %.2f\r\n"), env_h);
 		printf_P(PSTR("Light: %u\r\n"), env_l);
 
+		// send data
 		send_env_http_post(env_t, env_p, env_h, env_l);
 	}
 }
