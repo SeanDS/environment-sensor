@@ -30,6 +30,10 @@
 // redefine DHCP host name (first defined in dhcp.h)
 #define DCHP_HOST_NAME "ENVSENSOR"
 
+// default LED status
+uint8_t led_1_status = LED_OFF;
+uint8_t led_2_status = LED_OFF;
+
 // USB stream
 FILE usb_stream = FDEV_SETUP_STREAM(usb_serial_putchar, usb_serial_getchar, _FDEV_SETUP_RW);
 
@@ -41,6 +45,7 @@ uint8_t pwm_timer_ovf_count = 0;
 uint16_t dust_timer_ovf_count = 0;
 uint8_t env_timer_ovf_count = 0;
 uint8_t dhcp_timer_ovf_count = 0;
+uint8_t led_timer_ovf_count = 0;
 
 // measurement flags controlled by interrupts
 bool env_measurement_pending = false;
@@ -57,12 +62,29 @@ uint32_t pulse_2 = 0;
 volatile uint16_t dust_1 = 0;
 volatile uint16_t dust_2 = 0;
 
+void set_led_1(uint8_t flag) {
+	led_1_status = flag;
+}
+
+void set_led_2(uint8_t flag) {
+	led_2_status = flag;
+}
+
 void wizchip_enable(void) {
 	PORTF |= (1 << PF0);
 }
 
 void wizchip_disable(void) {
 	PORTF &= ~(1 << PF0);
+}
+
+void wizchip_cycle(void) {
+	wizchip_disable();
+	// delay as per W5500 datasheet
+	_delay_ms(5);
+	wizchip_enable();
+	// enough delay to allow physical link to be identified if present
+	_delay_ms(2000);
 }
 
 void wizchip_select(void) {
@@ -111,6 +133,7 @@ ISR(TIMER3_OVF_vect) {
 	dust_timer_ovf_count++;
 	env_timer_ovf_count++;
 	dhcp_timer_ovf_count++;
+	led_timer_ovf_count++;
 
 	// measure dust triggers: add 1 if the dust sensor output is pulled low
 	// (indicating dust), else add 0
@@ -154,6 +177,36 @@ ISR(TIMER3_OVF_vect) {
 		// set physical link check flag
 		phy_link_check_pending = true;
 	}
+
+	// every 4.096 ms
+	if (led_1_status == LED_ON) {
+		PORTC |= (1 << PC6);
+	} else if (led_1_status == LED_OFF) {
+		PORTC &= ~(1 << PC6);
+	}
+
+	// every 4.096 ms
+	if (led_2_status == LED_ON) {
+		PORTC |= (1 << PC7);
+	} else if (led_2_status == LED_OFF) {
+		PORTC &= ~(1 << PC7);
+	}
+
+	// approx every 500 ms
+	if (led_timer_ovf_count >= 122) {
+		if (led_1_status == LED_FLASHING) {
+			// toggle LED
+			PORTC ^= (1 << PC6);
+		}
+
+		if (led_2_status == LED_FLASHING) {
+			// toggle LED
+			PORTC ^= (1 << PC7);
+		}
+
+		// reset counter
+		led_timer_ovf_count = 0;
+	}
 }
 
 /*
@@ -196,8 +249,13 @@ int main(void) {
 	hardware_init();
 	pwm_timer_enable();
 
+	// flash green LED
+	set_led_1(LED_FLASHING);
+
+	// enable network chip
+	wizchip_cycle();
+
 	// set up network I/O
-	wizchip_enable();
 	wizchip_init((uint8_t*) WIZNET_BUF_SIZE, (uint8_t*) WIZNET_BUF_SIZE);
 	setSHAR((uint8_t*) mac_addr);
 
@@ -221,9 +279,14 @@ int main(void) {
 
 				// signal physical link not ready
 				phy_link_ready = false;
+
+				set_led_1(LED_FLASHING);
+				set_led_2(LED_OFF);
 			} else {
 				// signal physical link ready
 				phy_link_ready = true;
+
+				set_led_1(LED_ON);
 			}
 
 			// reset flag
@@ -262,15 +325,21 @@ int main(void) {
 			  dhcp_ready = false;
 
 				// reset physical link
-				wizchip_disable();
-				_delay_ms(5);
-				wizchip_enable();
+				wizchip_cycle();
+
+				// reset retry count
+				reset_DHCP_timeout();
+
+				set_led_2(LED_OFF);
 
 				break;
 			default:
 				// DHCP negotiation in progress
 				// signal DHCP not ready
 			  dhcp_ready = false;
+
+				set_led_2(LED_FLASHING);
+
 				break;
 		}
 
@@ -295,6 +364,8 @@ int main(void) {
 					printf_P(PSTR("[info] IP leased: %u.%u.%u.%u\r\n"),
 									 ip[0], ip[1], ip[2], ip[3]);
 
+					set_led_2(LED_ON);
+
 					break;
 				// DHCP negotiation unsuccessful
 				case DHCP_FAILED:
@@ -308,6 +379,8 @@ int main(void) {
 			// make and send measurements
 			dust_measurement();
 			env_measurement();
+		} else {
+			set_led_2(LED_FLASHING);
 		}
 	}
 }
@@ -329,6 +402,10 @@ void hardware_init(void) {
 	// set LED pins as outputs
 	DDRC |= (1 << PC6);
 	DDRC |= (1 << PC7);
+
+	// turn off LEDs
+	set_led_1(LED_OFF);
+	set_led_2(LED_OFF);
 
 	// set dust sensor P1 and P2 inputs
 	DDRD &= ~(1 << PD6);

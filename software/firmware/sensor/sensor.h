@@ -19,6 +19,11 @@ const char ENV_PATH[] = "/monitor/env";
 #define HTTP_BUF_SIZE 512
 #define PAYLOAD_BUF_SIZE 256
 
+// LED status flags
+#define LED_OFF 0
+#define LED_FLASHING 1
+#define LED_ON 2
+
 // socket buffer sizes, in kB
 const uint8_t WIZNET_BUF_SIZE[] = {1, 8, 1, 1, 1, 1, 1, 1};
 
@@ -26,8 +31,12 @@ const uint8_t WIZNET_BUF_SIZE[] = {1, 8, 1, 1, 1, 1, 1, 1};
 #define DHCP_SOCKET 0
 #define SENSOR_DATA_SOCKET 1
 
+void set_led_1(uint8_t);
+void set_led_2(uint8_t);
+
 void wizchip_enable(void);
 void wizchip_disable(void);
+void wizchip_cycle(void);
 void wizchip_select(void);
 void wizchip_deselect(void);
 
