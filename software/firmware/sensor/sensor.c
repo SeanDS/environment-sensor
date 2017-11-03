@@ -317,6 +317,7 @@ int main(void) {
 				// DHCP negotiation successful
 				// signal DHCP ready
 			  dhcp_ready = true;
+
 				break;
 			// DHCP negotiation unsuccessful
 			case DHCP_FAILED:
@@ -330,15 +331,11 @@ int main(void) {
 				// reset retry count
 				reset_DHCP_timeout();
 
-				set_led_2(LED_OFF);
-
 				break;
 			default:
 				// DHCP negotiation in progress
 				// signal DHCP not ready
 			  dhcp_ready = false;
-
-				set_led_2(LED_FLASHING);
 
 				break;
 		}
@@ -364,8 +361,6 @@ int main(void) {
 					printf_P(PSTR("[info] IP leased: %u.%u.%u.%u\r\n"),
 									 ip[0], ip[1], ip[2], ip[3]);
 
-					set_led_2(LED_ON);
-
 					break;
 				// DHCP negotiation unsuccessful
 				case DHCP_FAILED:
@@ -376,6 +371,8 @@ int main(void) {
 
 		// when unit is connected and assigned an IP
 		if (phy_link_ready && dhcp_ready) {
+			set_led_2(LED_ON);
+
 			// make and send measurements
 			dust_measurement();
 			env_measurement();
