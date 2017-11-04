@@ -2,7 +2,7 @@
 
 MCU          = atmega32u4
 ARCH         = AVR8
-F_CPU        = 16000000
+F_CPU        = 2000000
 F_USB        = $(F_CPU)
 OPTIMIZATION = s
 TARGET       = sensor

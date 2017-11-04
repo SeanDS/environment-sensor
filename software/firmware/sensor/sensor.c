@@ -127,7 +127,7 @@ void pwm_timer_enable(void) {
  *  occupancy and flagging measurements to be made from the BME280.
  */
 ISR(TIMER3_OVF_vect) {
-	// triggers every 4.096 ms
+	// triggers every 32.768 ms
 
 	// increment overflow counters
 	dust_timer_ovf_count++;
@@ -141,7 +141,7 @@ ISR(TIMER3_OVF_vect) {
 	pulse_2 += (PIND & (1 << PD7)) == 0 ? 1 : 0;
 
 	// approx 30 seconds
-	if (dust_timer_ovf_count > 7324) {
+	if (dust_timer_ovf_count > 915) {
 		// record pulse counts
 		dust_1 = pulse_1;
 		dust_2 = pulse_2;
@@ -158,7 +158,7 @@ ISR(TIMER3_OVF_vect) {
 	}
 
 	// approx 1 second
-	if (env_timer_ovf_count >= 244) {
+	if (env_timer_ovf_count >= 30) {
 		// set measurement flag
 		env_measurement_pending = true;
 
@@ -167,7 +167,7 @@ ISR(TIMER3_OVF_vect) {
 	}
 
 	// approx 1 second
-	if (dhcp_timer_ovf_count >= 244) {
+	if (dhcp_timer_ovf_count >= 30) {
 		// call DHCP second handler
 		DHCP_time_handler();
 
@@ -193,7 +193,7 @@ ISR(TIMER3_OVF_vect) {
 	}
 
 	// approx every 500 ms
-	if (led_timer_ovf_count >= 122) {
+	if (led_timer_ovf_count >= 15) {
 		if (led_1_status == LED_FLASHING) {
 			// toggle LED
 			PORTC ^= (1 << PC6);
@@ -216,7 +216,7 @@ ISR(TIMER0_OVF_vect) {
 	// increment overflow counter
 	pwm_timer_ovf_count++;
 
-	if (pwm_timer_ovf_count >= 125) {
+	if (pwm_timer_ovf_count >= 16) {
 		// switch on
 		PORTB |= (1 << PB5);
 	} else {
@@ -224,7 +224,7 @@ ISR(TIMER0_OVF_vect) {
 		PORTB &= ~(1 << PB5);
 	}
 
-	if (pwm_timer_ovf_count >= 128) {
+	if (pwm_timer_ovf_count >= 16) {
 		// reset
 		pwm_timer_ovf_count = 0;
 	}
@@ -387,8 +387,8 @@ void hardware_init(void) {
 	MCUSR &= ~(1 << WDRF);
 	wdt_disable();
 
-	// disable clock division
-	clock_prescale_set(clock_div_1);
+	// divide clock by 8
+	clock_prescale_set(clock_div_8);
 
 	// set W5500 chip select as output
 	DDRB |= (1 << PB6);
