@@ -103,7 +103,7 @@ void general_timer_enable(void) {
 	TCNT3 = 0x00;
 
 	// start timer with 1/1 scaling
-	// this gives overflows every (1/16e6)*65536 = 4.096 ms
+	// this gives overflows every (1/2e6)*65536 = 32.768 ms
 	TCCR3B = (1 << CS30);
 }
 
@@ -115,7 +115,7 @@ void pwm_timer_enable(void) {
 	TCNT0 = 0x00;
 
 	// start timer with 1/1 scaling
-	// this gives overflows every (1/16e6)*256 = 16 us
+	// this gives overflows every (1/2e6)*256 = 128 us
 	TCCR0B = (1 << CS00);
 }
 
@@ -141,7 +141,7 @@ ISR(TIMER3_OVF_vect) {
 	pulse_2 += (PIND & (1 << PD7)) == 0 ? 1 : 0;
 
 	// approx 30 seconds
-	if (dust_timer_ovf_count > 915) {
+	if (dust_timer_ovf_count > 930) {
 		// record pulse counts
 		dust_1 = pulse_1;
 		dust_2 = pulse_2;
@@ -158,7 +158,7 @@ ISR(TIMER3_OVF_vect) {
 	}
 
 	// approx 1 second
-	if (env_timer_ovf_count >= 30) {
+	if (env_timer_ovf_count >= 31) {
 		// set measurement flag
 		env_measurement_pending = true;
 
@@ -167,7 +167,7 @@ ISR(TIMER3_OVF_vect) {
 	}
 
 	// approx 1 second
-	if (dhcp_timer_ovf_count >= 30) {
+	if (dhcp_timer_ovf_count >= 31) {
 		// call DHCP second handler
 		DHCP_time_handler();
 
@@ -178,14 +178,14 @@ ISR(TIMER3_OVF_vect) {
 		phy_link_check_pending = true;
 	}
 
-	// every 4.096 ms
+	// every 32.768 ms
 	if (led_1_status == LED_ON) {
 		PORTC |= (1 << PC6);
 	} else if (led_1_status == LED_OFF) {
 		PORTC &= ~(1 << PC6);
 	}
 
-	// every 4.096 ms
+	// every 32.768 ms
 	if (led_2_status == LED_ON) {
 		PORTC |= (1 << PC7);
 	} else if (led_2_status == LED_OFF) {

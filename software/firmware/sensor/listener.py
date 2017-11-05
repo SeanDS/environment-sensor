@@ -1,5 +1,6 @@
 import socket
 import sys
+import datetime
 
 HOST = "192.168.0.40"
 PORT = 50000
@@ -25,13 +26,20 @@ print("Socket bound")
 s.listen(10)
 print("Listening on {0}:{1}".format(HOST, PORT))
 
+now = datetime.datetime.utcnow()
+
 try:
     # loop until terminated
     while True:
         # block until connection appears
         conn, addr = s.accept()
 
-        print("Connection from {0}:{1}".format(addr[0], addr[1]))
+        # time
+        last = now
+        now = datetime.datetime.utcnow()
+        diff = now - last
+
+        print("+{0} Connection from {1}:{2}".format(diff, addr[0], addr[1]))
 
         # extract data
         data = conn.recv(1024)
