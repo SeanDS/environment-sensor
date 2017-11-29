@@ -523,7 +523,7 @@ void send_env_http_post(float env_t, double env_p, float env_h, uint16_t env_l) 
 	char payload[PAYLOAD_BUF_SIZE];
 
 	sprintf_P(payload, PSTR("{"
-		"\"version\":" SOFTWARE_VERSION ","
+		"\"version\":\"" SOFTWARE_VERSION "\","
 		"\"mac\":\"%02x:%02x:%02x:%02x:%02x:%02x\","
 		"\"temperature\":%.2f,"
 		"\"pressure\":%.2f,"
