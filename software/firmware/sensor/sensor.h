@@ -4,10 +4,10 @@
 #define SOFTWARE_VERSION "0.9.2"
 
 // this unit's physical address
-const uint8_t mac_addr[] = {0x00, 0x08, 0xdc, 0xab, 0xcd, 0xef};
+const uint8_t mac_addr[] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
 
 // sensor server settings
-const uint8_t SERVER_IP[] = {192, 168, 0, 40};
+const uint8_t SERVER_IP[] = {192, 168, 0, 1};
 const uint16_t SERVER_PORT = 50000;
 
 // server paths for posting data

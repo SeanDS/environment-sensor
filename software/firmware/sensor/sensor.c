@@ -504,7 +504,7 @@ void send_dust_http_post(uint16_t dust_1, uint16_t dust_2) {
 	char payload[PAYLOAD_BUF_SIZE];
 
 	sprintf_P(payload, PSTR("{"
-		"\"version\":" SOFTWARE_VERSION ","
+		"\"version\":\"" SOFTWARE_VERSION "\","
 		"\"mac\":\"%02x:%02x:%02x:%02x:%02x:%02x\","
 		"\"dust1\":%u,"
 		"\"dust2\":%u"
