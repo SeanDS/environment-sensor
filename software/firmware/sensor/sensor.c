@@ -43,7 +43,7 @@ uint8_t dhcp_buf[DHCP_BUF_SIZE];
 // timer overflow counters
 uint8_t pwm_timer_ovf_count = 0;
 uint16_t dust_timer_ovf_count = 0;
-uint8_t env_timer_ovf_count = 0;
+uint16_t env_timer_ovf_count = 0;
 uint8_t dhcp_timer_ovf_count = 0;
 uint8_t led_timer_ovf_count = 0;
 
@@ -157,8 +157,8 @@ ISR(TIMER3_OVF_vect) {
 		dust_timer_ovf_count = 0;
 	}
 
-	// approx 1 second
-	if (env_timer_ovf_count >= 31) {
+	// approx 30 seconds
+	if (env_timer_ovf_count > 930) {
 		// set measurement flag
 		env_measurement_pending = true;
 
