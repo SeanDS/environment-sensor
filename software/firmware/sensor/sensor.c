@@ -485,64 +485,64 @@ void send_data(const uint8_t* dest_ip, const uint16_t dest_port, char* msg) {
 	}
 }
 
-void send_json_http_post(const uint8_t* dest_ip, const uint16_t dest_port, const char* path, char* msg) {
+void send_json_http_get(const uint8_t* dest_ip, const uint16_t dest_port, const char* path) {
 	// buffer for HTTP request
 	char http_msg[HTTP_BUF_SIZE];
 
 	// construct HTTP request (must use HTTP 1.0 because we cannot define the
 	// required HTTP/1.1 host header)
 	sprintf_P(http_msg, PSTR(
-		"POST %s HTTP/1.0\r\n"
+		"GET %s HTTP/1.0\r\n"
+		"Host: %s\r\n"
 		"Content-Type: application/json; charset=utf-8\r\n"
 		"Connection: close\r\n"
-		"Content-Length: %u\r\n"
 		"\r\n"
-		"%s"
 		"\r\n"),
-		path, strlen(msg), msg);
+		path,
+		INPUT_HOST);
 
 	// send data
 	return send_data(dest_ip, dest_port, http_msg);
 }
 
-void send_dust_http_post(uint16_t dust_1, uint16_t dust_2) {
+void send_dust_http_get(uint16_t dust_1, uint16_t dust_2) {
 	// sensor payload buffer
-	char payload[PAYLOAD_BUF_SIZE];
+	char path[PAYLOAD_BUF_SIZE];
 
-	sprintf_P(payload, PSTR("{"
-		"\"version\":\"" SOFTWARE_VERSION "\","
-		"\"mac\":\"%02x:%02x:%02x:%02x:%02x:%02x\","
-		"\"dust1\":%u,"
-		"\"dust2\":%u"
+	// no quotes in this JSON string mode
+	sprintf_P(path, PSTR(
+		"%s"
+		"{"
+		"dust1:%u,"
+		"dust2:%u"
 		"}"),
-		mac_addr[0], mac_addr[1], mac_addr[2],
-		mac_addr[3], mac_addr[4], mac_addr[5],
+		INPUT_PATH,
 		dust_1, dust_2
 	);
 
 	// send data
-	send_json_http_post(SERVER_IP, SERVER_PORT, DUST_PATH, payload);
+	send_json_http_get(SERVER_IP, SERVER_PORT, path);
 }
 
-void send_env_http_post(float env_t, double env_p, float env_h, uint16_t env_l) {
+void send_env_http_get(float env_t, double env_p, float env_h, uint16_t env_l) {
 	// sensor payload buffer
-	char payload[PAYLOAD_BUF_SIZE];
+	char path[PAYLOAD_BUF_SIZE];
 
-	sprintf_P(payload, PSTR("{"
-		"\"version\":\"" SOFTWARE_VERSION "\","
-		"\"mac\":\"%02x:%02x:%02x:%02x:%02x:%02x\","
-		"\"temperature\":%.2f,"
-		"\"pressure\":%.2f,"
-		"\"humidity\":%.2f,"
-		"\"light\":%u"
+	// no quotes in this JSON string mode
+	sprintf_P(path, PSTR(
+		"%s"
+		"{"
+		"temperature:%.2f,"
+		"pressure:%.2f,"
+		"humidity:%.2f,"
+		"light:%u"
 		"}"),
-		mac_addr[0], mac_addr[1], mac_addr[2],
-		mac_addr[3], mac_addr[4], mac_addr[5],
+		INPUT_PATH,
 		env_t, env_p, env_h, env_l
 	);
 
 	// send data
-	send_json_http_post(SERVER_IP, SERVER_PORT, ENV_PATH, payload);
+	send_json_http_get(SERVER_IP, SERVER_PORT, path);
 }
 
 void dust_measurement(void) {
@@ -567,7 +567,7 @@ void dust_measurement(void) {
 	printf_P(PSTR("Dust 2: %u\r\n"), dust_2_copy);
 
 	// send data
-	send_dust_http_post(dust_1_copy, dust_2_copy);
+	send_dust_http_get(dust_1_copy, dust_2_copy);
 }
 
 void env_measurement(void) {
@@ -591,5 +591,5 @@ void env_measurement(void) {
 	printf_P(PSTR("Light: %u\r\n"), env_l);
 
 	// send data
-	send_env_http_post(env_t, env_p, env_h, env_l);
+	send_env_http_get(env_t, env_p, env_h, env_l);
 }

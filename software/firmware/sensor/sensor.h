@@ -11,8 +11,8 @@ const uint8_t SERVER_IP[] = {192, 168, 0, 1};
 const uint16_t SERVER_PORT = 50000;
 
 // server paths for posting data
-const char DUST_PATH[] = "/monitor/dust";
-const char ENV_PATH[] = "/monitor/env";
+const char INPUT_PATH[] = "/input/post?apikey=xxx&node=mynode&json=";
+const char INPUT_HOST[] = "my.host.com";
 
 // string buffer sizes
 #define DHCP_BUF_SIZE 1024
