@@ -316,14 +316,14 @@ int main(void) {
 			case DHCP_IP_LEASED:
 				// DHCP negotiation successful
 				// signal DHCP ready
-			  dhcp_ready = true;
+			    dhcp_ready = true;
 
 				break;
 			// DHCP negotiation unsuccessful
 			case DHCP_FAILED:
 				// DHCP negotiation failed
 				// signal DHCP not ready
-			  dhcp_ready = false;
+			    dhcp_ready = false;
 
 				// reset physical link
 				wizchip_cycle();
@@ -335,7 +335,7 @@ int main(void) {
 			default:
 				// DHCP negotiation in progress
 				// signal DHCP not ready
-			  dhcp_ready = false;
+			    dhcp_ready = false;
 
 				break;
 		}
@@ -412,7 +412,7 @@ void hardware_init(void) {
 	DDRB |= (1 << PB5);
 
 	// disable W5500 chip select
-  wizchip_deselect();
+    wizchip_deselect();
 
 	// disable W5500
 	wizchip_disable();
@@ -457,25 +457,31 @@ void send_data(const uint8_t* dest_ip, const uint16_t dest_port, char* msg) {
 	// create a TCP socket
 	sck_status = socket(SENSOR_DATA_SOCKET, Sn_MR_TCP, 0, 0);
 
-	if (sck_status == SENSOR_DATA_SOCKET) {
-		// connect to the server
-		con_status = connect(SENSOR_DATA_SOCKET, (uint8_t*) dest_ip, (uint16_t) dest_port);
-
-		if (con_status == SOCK_OK) {
-			// send data
-			send_status = send(SENSOR_DATA_SOCKET, (uint8_t*) msg, strlen(msg));
-
-			// send status should match length of message if successful
-			if (send_status != strlen(msg)) {
-				printf_P(PSTR("[error] unable to send: %" PRIi32 "\r\n"), send_status);
-			}
-		} else {
-			// connection issue
-			printf_P(PSTR("[error] connection not available: %i\r\n"), con_status);
-		}
-	} else {
+	if (sck_status != SENSOR_DATA_SOCKET) {
 		// socket issue
 		printf_P(PSTR("[error] unable to create socket: %i\r\n"), sck_status);
+		
+		return;
+	}
+	
+	// connect to the server
+	con_status = connect(SENSOR_DATA_SOCKET, (uint8_t*) dest_ip, (uint16_t) dest_port);
+
+	if (con_status != SOCK_OK) {
+		// connection issue
+		printf_P(PSTR("[error] connection not available: %i\r\n"), con_status);
+
+		return;
+	}
+
+	// send data
+	send_status = send(SENSOR_DATA_SOCKET, (uint8_t*) msg, strlen(msg));
+
+	// send status should match length of message if successful
+	if (send_status != strlen(msg)) {
+		printf_P(PSTR("[error] unable to send: %" PRIi32 "\r\n"), send_status);
+
+		return;
 	}
 }
 
@@ -540,46 +546,50 @@ void send_env_http_post(float env_t, double env_p, float env_h, uint16_t env_l) 
 }
 
 void dust_measurement(void) {
-	if (dust_measurement_ready) {
-		// measurement variables
-		uint16_t dust_1_copy;
-		uint16_t dust_2_copy;
-
-		// avoid interrupts while reading sensor values
-		ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
-			dust_1_copy = dust_1;
-			dust_2_copy = dust_2;
-		}
-
-		// reset
-		dust_measurement_ready = false;
-
-		printf_P(PSTR("Dust 1: %u\r\n"), dust_1_copy);
-		printf_P(PSTR("Dust 2: %u\r\n"), dust_2_copy);
-
-		// send data
-		send_dust_http_post(dust_1_copy, dust_2_copy);
+	if (! dust_measurement_ready) {
+		return;
 	}
+	
+	// measurement variables
+	uint16_t dust_1_copy;
+	uint16_t dust_2_copy;
+
+	// avoid interrupts while reading sensor values
+	ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
+		dust_1_copy = dust_1;
+		dust_2_copy = dust_2;
+	}
+
+	// reset
+	dust_measurement_ready = false;
+
+	printf_P(PSTR("Dust 1: %u\r\n"), dust_1_copy);
+	printf_P(PSTR("Dust 2: %u\r\n"), dust_2_copy);
+
+	// send data
+	send_dust_http_post(dust_1_copy, dust_2_copy);
 }
 
 void env_measurement(void) {
-	if (env_measurement_pending) {
-		// take measurements
-		float env_t = bme280_read_temperature();
-		double env_p = bme280_read_pressure();
-		float env_h = bme280_read_humidity();
-		uint16_t env_l = analog_read(ADC_8);
-
-		// reset
-		env_measurement_pending = false;
-
-		// float support below needs linker flags: -Wl,-u,vfprintf -lprintf_flt
-		printf_P(PSTR("Temperature: %.2f\r\n"), env_t);
-		printf_P(PSTR("Pressure: %.2f\r\n"), env_p);
-		printf_P(PSTR("Humidity: %.2f\r\n"), env_h);
-		printf_P(PSTR("Light: %u\r\n"), env_l);
-
-		// send data
-		send_env_http_post(env_t, env_p, env_h, env_l);
+	if (! env_measurement_pending) {
+		return;
 	}
+
+	// take measurements
+	float env_t = bme280_read_temperature();
+	double env_p = bme280_read_pressure();
+	float env_h = bme280_read_humidity();
+	uint16_t env_l = analog_read(ADC_8);
+
+	// reset
+	env_measurement_pending = false;
+
+	// float support below needs linker flags: -Wl,-u,vfprintf -lprintf_flt
+	printf_P(PSTR("Temperature: %.2f\r\n"), env_t);
+	printf_P(PSTR("Pressure: %.2f\r\n"), env_p);
+	printf_P(PSTR("Humidity: %.2f\r\n"), env_h);
+	printf_P(PSTR("Light: %u\r\n"), env_l);
+
+	// send data
+	send_env_http_post(env_t, env_p, env_h, env_l);
 }

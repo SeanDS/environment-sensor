@@ -1,7 +1,7 @@
 #ifndef _SENSOR_H_
 #define _SENSOR_H_
 
-#define SOFTWARE_VERSION "0.9.2"
+#define SOFTWARE_VERSION "0.9.3"
 
 // this unit's physical address
 const uint8_t mac_addr[] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
